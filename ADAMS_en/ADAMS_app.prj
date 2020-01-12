@@ -1,0 +1,81 @@
+<deployment-project plugin="plugin.apptool" plugin-version="1.0">
+  <configuration build-checksum="3641035232" file="C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\day_ahead_simu\ADAMS_app.prj" location="C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\day_ahead_simu" name="ADAMS_app" target="target.mlapps" target-name="Package App">
+    <param.appname>ADAMS_app</param.appname>
+    <param.authnamewatermark>Lucas Rhode</param.authnamewatermark>
+    <param.email>rhode.lucasb@gmail.com</param.email>
+    <param.company>Universidade Estadual do Oeste do Paraná</param.company>
+    <param.icon>${PROJECT_ROOT}\ADAMS_app_resources\icon_24.png</param.icon>
+    <param.icons>
+      <file>${PROJECT_ROOT}\ADAMS_app_resources\icon_48.png</file>
+      <file>${PROJECT_ROOT}\ADAMS_app_resources\icon_24.png</file>
+      <file>${PROJECT_ROOT}\ADAMS_app_resources\icon_16.png</file>
+    </param.icons>
+    <param.summary />
+    <param.description />
+    <param.screenshot>C:\Users\Lucas Rhode\Desktop\Untitled.png</param.screenshot>
+    <param.version>1.0</param.version>
+    <param.products.name />
+    <param.products.id />
+    <param.products.version />
+    <param.platforms>
+      <item>win64</item>
+    </param.platforms>
+    <param.output>C:\ADAMS\App</param.output>
+    <param.guid>91598857-4e93-4cee-acec-48f3c9383135</param.guid>
+    <unset>
+      <param.summary />
+      <param.description />
+      <param.version />
+      <param.products.name />
+      <param.products.id />
+      <param.products.version />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\ADAMS.mlapp</file>
+    </fileset.main>
+    <fileset.depfun>
+      <file>C:\GAMS\win64\25.0\rgdx.m</file>
+      <file>C:\GAMS\win64\25.0\rgdx.mexw64</file>
+      <file>${PROJECT_ROOT}\TSChart.mlapp</file>
+    </fileset.depfun>
+    <fileset.resources>
+      <file>C:\GAMS\win64\25.0\gdxdclib.dll</file>
+      <file>C:\GAMS\win64\25.0\gdxdclib64.dll</file>
+      <file>C:\GAMS\win64\25.0\wgdx.m</file>
+      <file>C:\GAMS\win64\25.0\wgdx.mexw64</file>
+      <file>${PROJECT_ROOT}\figures</file>
+      <file>C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_lib</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file location="C:\ADAMS" name="App" optional="false">C:\ADAMS\App</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\Polyspace\R2019a</root>
+      <toolboxes>
+        <toolbox name="matlabcoder" />
+      </toolboxes>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

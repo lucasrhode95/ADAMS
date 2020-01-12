@@ -1,0 +1,104 @@
+[PROJECT]
+
+[RP:LOADER]
+1=
+
+[RP:MODEL_CASE0 - COPY]
+1=
+
+[RP:UNTITLED_1]
+1=
+
+[RP:UNTITLED_2]
+1=
+
+[RP:BATTERY_MODEL1]
+1=
+
+[RP:MICROGRID_COM_BAT]
+1=
+
+[RP:BATTERY_DATA1]
+1=
+
+[RP:MODEL_BATTERY_WEAR - COPY]
+1=
+
+[RP:BATTERY_SETTINGS1]
+1=
+
+[RP:MODEL_BATTERY_WEAR]
+1=
+
+[RP:BATTERY_EQUATIONS1]
+1=
+
+[RP:MODEL_BATTERY_WEARV2]
+1=
+
+[RP:EMS_QUITES_PARAMETERS_OLD]
+1=
+
+[RP:EMS_QUITES_MAIN]
+1=
+
+[RP:EMS_QUITES_PARAMETERS]
+1=
+
+[RP:MICROGRID_QUITES_PARAMETERS_OLD]
+1=
+
+[RP:EMS_QUITES_EQUATIONS]
+1=
+
+[RP:LOAD_NET-LOAD_PARAMETERS]
+1=
+
+[RP:MICROGRID]
+1=
+
+[RP:BATTERY_HAN_EQUATIONS]
+1=
+
+[RP:MICROGRID_QUITES_PARAMETERS]
+1=
+
+[RP:MICROGRID_QUITES_EQUATIONS]
+1=
+
+[RP:BATTERY_HAN_PARAMETERS]
+1=
+
+[RP:CENTRAL-CONTROLLER_QUITES_PARAMETERS]
+1=
+
+[RP:CENTRAL-CONTROLLER_QUITES_EQUATIONS]
+1=
+
+[RP:LOAD_CONSTANT_PARAMETERS]
+1=
+
+[RP:DIESELGEN_QUADRATIC_EQUATIONS]
+1=
+
+[RP:DIESELGEN_QUADRATIC_PARAMETERS]
+1=
+
+[MRUFILES]
+1=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\load_constant_parameters.gms
+2=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\central-controller_quites_equations.gms
+3=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\central-controller_quites_parameters.gms
+4=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\battery_han_parameters.gms
+5=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\microgrid_quites_parameters.gms
+6=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\battery_han_equations.gms
+
+[OPENWINDOW_1]
+FILE0=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\dieselgen_quadratic_equations.gms
+FILE1=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\dieselgen_quadratic_parameters.gms
+FILE2=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\microgrid_quites_equations.gms
+FILE3=C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_framework\+microgrid_model\+models\microgrid_quites_equations.gms
+MAXIM=1
+TOP=50
+LEFT=50
+HEIGHT=400
+WIDTH=400

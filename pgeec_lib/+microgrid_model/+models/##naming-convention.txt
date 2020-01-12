@@ -1,0 +1,10 @@
+Each model will have up to 2 modules, each in a separated file: Parameters module and Equations module.
+
+The syntax for each file is {ELEMENT-TYPE}_{IMPLEMENTATION-NAME}_{MODULE = equations|parameters}.
+
+ELEMENT             = battery | dieselgen | ... etc (any other you want to implement here and in MATLAB)
+IMPLEMENTATION NAME = name of the model you're implementing (e.g. 'linear' or 'ZIP-load-model')
+MODULE              = parameters | equations
+
+- Underscore '_' should be used only as syntax separator.
+- Lowercase, avoid spaces, use hyphen '-' as word separator.
