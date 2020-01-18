@@ -7,8 +7,8 @@ GRID_MINOR_BY_DEFAULT = false;
 
 FONT_TYPE = 'Times New Roman';
 
+AXIS_FONT_SIZE = 16;
 
-TITLE_FONT_SIZE = 28;
 TITLE_FONT_SIZE = 22;
 TITLE_FONT_WEIGHT = 'normal';
 
