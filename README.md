@@ -14,7 +14,7 @@ The workflow is as follows:
 1. ADAMS display the results in a nice point-and-click kind of way
 
 # Installation
-1. ADAMS expects your machine to have GAMS installed, licensed and in your enviroment path. You can get it [here](GAMS/README.md) or use any version that you already have installed. Check [this](GAMS/README.md) out if you have any trouble setting up GAMS.
+1. ADAMS expects your machine to have GAMS installed, licensed and in your enviroment path. You can get it [here](GAMS/gams_license.md) or use any version that you already have installed. Check [this](GAMS/README.md) out if you have any trouble setting up GAMS.
 1. Install using the web installer or the standalone installer: https://drive.google.com/open?id=1OuZuJSZSq1NdYQyCdt4_hXaLGAgDSdeK
 1. Done! You can access the user manual [here](USER_MANUAL.pdf) or through the app's Help menu.
 
