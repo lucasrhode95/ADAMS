@@ -209,10 +209,6 @@ classdef (Abstract) Load < microgrid_model.MGElement
 			
 			status = true;
 		end
-		
-		function publicTest(this, varargin)
-			this.updateTimeInfo(varargin{:});
-		end
 		% ^^ FUNCTIONALITY
 	end
 	
@@ -293,6 +289,10 @@ classdef (Abstract) Load < microgrid_model.MGElement
 			oldTime    = this.getOriginalTimeArray();
 			oldSamples = this.getOriginalProfile();
 			
+			if isempty(oldTime) || isempty(oldSamples)
+				error('No power curve for %s (#%d).', this.getClassName(), this.getId());
+			end
+			
 			if this.DEV
 				CommonsUtil.log('Transposing original demand... Original: %d samples, %0.4g minutes\n', length(oldTime), oldTime(end));
 			end
@@ -335,8 +335,10 @@ classdef (Abstract) Load < microgrid_model.MGElement
 		% API developers' use only.
 		%
 		% See also: <a href="matlab:doc('microgrid_model.MGElement/checkIsReadyForExecution')">MGElement.checkIsReadyForExecution()</a>
-			if isempty(this.getOriginalProfile())
+			if isempty(this.getOriginalProfile()) || isempty(this.getProcessedProfile())
 				error('Demand curve empty.');
+			elseif isempty(this.getOriginalTimeArray) || isempty(this.getTimeArray())
+				error('Time array empty.');
 			end
 		end
 		
