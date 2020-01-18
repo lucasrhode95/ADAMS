@@ -1,4 +1,4 @@
-# ADAMS: A day-ahead microgrid simulator
+![ADAMS splash screen](ADAMS_en/figures/splash.png)
 ADAMS is an app built with MATLAB and GAMS that allows the user to create microgrid simulations of a day-ahead planning. It is a result of an undergrad thesis about microgrids presented to the State University of Western Parana (UNIOESTE) on Dec/2019.
 
 # Context
