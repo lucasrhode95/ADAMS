@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="3641035232" file="C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\day_ahead_simu\ADAMS_app.prj" location="C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\day_ahead_simu" name="ADAMS_app" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="3641035232" file="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_app.prj" location="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en" name="ADAMS_app" target="target.mlapps" target-name="Package App">
     <param.appname>ADAMS_app</param.appname>
     <param.authnamewatermark>Lucas Rhode</param.authnamewatermark>
     <param.email>rhode.lucasb@gmail.com</param.email>
@@ -12,7 +12,7 @@
     </param.icons>
     <param.summary />
     <param.description />
-    <param.screenshot>C:\Users\Lucas Rhode\Desktop\Untitled.png</param.screenshot>
+    <param.screenshot />
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
@@ -25,6 +25,7 @@
     <unset>
       <param.summary />
       <param.description />
+      <param.screenshot />
       <param.version />
       <param.products.name />
       <param.products.id />
@@ -43,8 +44,8 @@
       <file>C:\GAMS\win64\25.0\gdxdclib64.dll</file>
       <file>C:\GAMS\win64\25.0\wgdx.m</file>
       <file>C:\GAMS\win64\25.0\wgdx.mexw64</file>
-      <file>${PROJECT_ROOT}\figures</file>
       <file>C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_lib</file>
+      <file>${PROJECT_ROOT}\figures</file>
     </fileset.resources>
     <fileset.package />
     <build-deliverables>

@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3186292119" file="C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\ADAMS_en\ADAMS_installer.prj" location="C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\ADAMS_en" name="ADAMS_installer" preferred-package-location="C:\ADAMS\Installer\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3186292119" file="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer.prj" location="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en" name="ADAMS_installer" preferred-package-location="C:\ADAMS\Installer\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>ADAMS</param.appname>
     <param.icon>${PROJECT_ROOT}\ADAMS_installer_resources\icon.ico</param.icon>
     <param.icons>
@@ -8,15 +8,15 @@
       <file>${PROJECT_ROOT}\ADAMS_installer_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\ADAMS_installer_resources\icon_16.png</file>
     </param.icons>
-    <param.version>1.0</param.version>
+    <param.version>0.1</param.version>
     <param.authnamewatermark>Lucas Rhode</param.authnamewatermark>
     <param.email>rhode.lucasb@gmail.com</param.email>
-    <param.company>Universidade Estadual do Oeste do Parana</param.company>
-    <param.summary>Energy Management System simulation under a day-ahead paradigm</param.summary>
-    <param.description />
+    <param.company>Universty of Western Parana (UNIOESTE)</param.company>
+    <param.summary>Optimisation of microgrid operation</param.summary>
+    <param.description>The application consists of a graphical interface meant to configure and run simulations of the optimisation strategy called “day-ahead planning”. In this strategy, the main controller schedules the set-points of all the devices on the microgrid (MG) for, typically, 24-hour horizons. The execution of the day-ahead algorithm means choosing the right combo of generators (and/or batteries) that will deliver the energy needed at the lowest possible cost.</param.description>
     <param.screenshot>${PROJECT_ROOT}\figures\splash.png</param.screenshot>
     <param.guid />
-    <param.installpath.string>\Universidade Estadual do Oeste do Parana\ADAMS\</param.installpath.string>
+    <param.installpath.string>\Universty of Western Parana (UNIOESTE)\ADAMS\</param.installpath.string>
     <param.installpath.combo>option.installpath.appdata</param.installpath.combo>
     <param.logo>${PROJECT_ROOT}\figures\icon.png</param.logo>
     <param.install.notes>- GAMS x64 with IBM's CPLEX licence required
@@ -30,10 +30,10 @@
     <param.user.defined.mcr.options />
     <param.target.type>subtarget.standalone</param.target.type>
     <param.support.packages />
-    <param.web.mcr>false</param.web.mcr>
-    <param.package.mcr>true</param.package.mcr>
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
     <param.no.mcr>false</param.no.mcr>
-    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.web.mcr.name>ADAMS_web_installer</param.web.mcr.name>
     <param.package.mcr.name>ADAMS</param.package.mcr.name>
     <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
     <param.windows.command.prompt>false</param.windows.command.prompt>
@@ -47,12 +47,12 @@
 	 
  Input Arguments 
 	 -?  print help on how to use the application 
-	 input arguments</param.help.text>
+	 input arguments 
+ Description 
+ 	 The application consists of a graphical interface meant to configure and run simulations of the optimisation strategy called “day-ahead planning”. In this strategy, the main controller schedules the set-points of all the devices on the microgrid (MG) for, typically, 24-hour horizons. The execution of the day-ahead algorithm means choosing the right combo of generators (and/or batteries) that will deliver the energy needed at the lowest possible cost.</param.help.text>
     <unset>
-      <param.version />
       <param.authnamewatermark />
       <param.email />
-      <param.description />
       <param.guid />
       <param.installpath.string />
       <param.target.install.notes />
@@ -60,8 +60,9 @@
       <param.user.defined.mcr.options />
       <param.target.type />
       <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
       <param.no.mcr />
-      <param.web.mcr.name />
       <param.no.mcr.name />
       <param.native.matlab />
       <param.checkbox />
@@ -76,8 +77,8 @@
       <file>C:\GAMS\win64\25.0\rgdx.mexw64</file>
       <file>C:\GAMS\win64\25.0\wgdx.m</file>
       <file>C:\GAMS\win64\25.0\wgdx.mexw64</file>
-      <file>${PROJECT_ROOT}\figures</file>
       <file>C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_lib</file>
+      <file>${PROJECT_ROOT}\figures</file>
     </fileset.resources>
     <fileset.package />
     <fileset.depfun>
