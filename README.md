@@ -16,5 +16,8 @@ The workflow is as follows:
 # Installation
 
 # Screenshots
+App's main screen:
 ![Main screen](ADAMS_en/figures/ss1.png)
+
+TSChart: a sub-app to visualize time-series
 ![Main screen](ADAMS_en/figures/ss2.png)
