@@ -17,4 +17,7 @@ The workflow is as follows:
 
 # Screenshots
 ![Main screen](ADAMS_en/figures/ss1.png)
+Main screen of ADAMS
+
 ![Main screen](ADAMS_en/figures/ss2.png)
+TSChart: a sub-app to visualize time-series
