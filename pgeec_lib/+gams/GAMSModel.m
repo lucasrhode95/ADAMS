@@ -14,7 +14,7 @@ classdef GAMSModel < handle
 	%
 	% Intended usage workflow:
 	%
-	% 1) Write an GAMS model declaring all the variables that will be
+	% 1) Write a GAMS model declaring all the variables that will be
 	% loaded dynamically through MATLAB.
 	%
 	% 2) Include the following line in your GAMS model:
@@ -164,7 +164,7 @@ classdef GAMSModel < handle
 		end
 		
 		function delete(this)
-		%DELETE Class destructor that provides shut-down gracefully capability
+		% Class destructor that provides shut-down gracefully capability
 			import util.*
 			
 			if this.DEV
@@ -183,7 +183,7 @@ classdef GAMSModel < handle
 		
 		% VV GETTERS AND SETTERS FOR CLASS ATTRIBUTES
 		function modelPath = getModelPath(this)
-		%GETMODELPATH Returns the path to the .gms file that this handle represents.
+		% Returns the path to the .gms file that this handle represents.
 		% This class is only meant to serve as a data-exchange facilitator
 		% with GAMS, not a modeling tool. Therefore, the actual
 		% mathematical model still needs to be created using GAMS code.
@@ -191,7 +191,7 @@ classdef GAMSModel < handle
 		end
 		
 		function varLoaderPath = getVarLoaderPath(this)
-		%GETVARLOADERPATH Returns the path to the GDX file loader.
+		% Returns the path to the GDX file loader.
 		%
 		% This file should be included in the model file as follows:
 		% $if exist loader.gms $include loader.gms
@@ -199,42 +199,44 @@ classdef GAMSModel < handle
 		end
 		
 		function this = setVarLoaderPath(this, varLoaderPath)
-		%SETVARLOADERPATH Sets the path of the variable loader file, file that must be manually included by the user into the model. This is optional and usually of little concern to the end-user.
-			import util.*
+		% Sets the path of the variable loader file, file that must be manually included by the user into the model. This is optional and usually of little concern to the end-user.
+			import util.FilesUtil
 		
 			if ~strcmp(this.getVarLoaderPath(), varLoaderPath)
 				this.setIsReadyForExport(false);
-				this.varLoaderPath = strrep([FilesUtil.getParentDir(this.getModelPath()), filesep, varLoaderPath], '\', '/');
+% 				this.varLoaderPath = strrep([FilesUtil.getParentDir(this.getModelPath()), filesep, varLoaderPath], '\', '/');
+				this.varLoaderPath = FilesUtil.sanitizePath(varLoaderPath, false);
 			end
 		end
 		
 		function gdxDumpPath = getGdxDumpPath(this)
-		%GETGDXDUMPPATH Returns the path of the temporary GDX dump file used by MATLAB to communicate with GAMS. This is optional and usually of little concern to the end-user.
+		% Returns the path of the temporary GDX dump file used by MATLAB to communicate with GAMS. This is optional and usually of little concern to the end-user.
 			gdxDumpPath = this.gdxDumpPath;
 		end
 		
 		function this = setGdxDumpPath(this, gdxDumpPath)
-		%SETGDXDUMPPATH Sets the path/filename of the GDX temporary dump file used by MATLAB to communicate with GAMS. This is optional and usually of little concern to the end-user.
-			import util.*
+		% Sets the path/filename of the GDX temporary dump file used by MATLAB to communicate with GAMS. This is optional and usually of little concern to the end-user.
+			import util.FilesUtil
 		
 			if ~strcmp(this.getGdxDumpPath(), gdxDumpPath)
 				this.setIsReadyForExport(false);
-				this.gdxDumpPath = strrep([FilesUtil.getParentDir(this.getModelPath()), filesep, gdxDumpPath], '\', '/');
+% 				this.gdxDumpPath = strrep([FilesUtil.getParentDir(this.getModelPath()), filesep, gdxDumpPath], '\', '/');
+				this.gdxDumpPath = FilesUtil.sanitizePath(gdxDumpPath, false);
 			end
 		end
 		
 		function tmpOutputPath = getTmpOutputPath(this)
-		%GETTMPOUTPUTPATH Returns the path of the file used by GAMS to communicate with MATLABThis is optional and usually of little concern to the end-user.
+		% Returns the path of the file used by GAMS to communicate with MATLAB. This is optional and usually of little concern to the end-user.
 			tmpOutputPath = this.tmpOutputPath;
 		end
 		
 		function this = setTmpOutputPath(this, tmpOutputPath)
-		%SETTMPOUTPUTPATH Sets the path/filename of the GDX temporary dump file used by GAMS to communicate with MATLAB. This is optional and usually of little concern to the end-user.
-			import util.*
+		% Sets the path/filename of the GDX temporary dump file used by GAMS to communicate with MATLAB. This is optional and usually of little concern to the end-user.
+			import util.FilesUtil
 		
 				if ~strcmp(this.tmpOutputPath(), tmpOutputPath)
 				this.setIsReadyForExport(false);
-				this.tmpOutputPath = tmpOutputPath;
+				this.tmpOutputPath = FilesUtil.sanitizePath(tmpOutputPath, false);
 % 				this.tmpOutputPath = strrep([FilesUtil.getParentDir(this.getModelPath()), filesep, tmpOutputPath], '\', '/');
 			end
 		end
@@ -1016,7 +1018,6 @@ classdef GAMSModel < handle
 				rethrow(e);
 			end
 		end
-				
 		% ^^ PUBLIC UTILITIES
 		
 		% VV PUBLIC CONTROL INTERFACE
@@ -1063,14 +1064,19 @@ classdef GAMSModel < handle
 				totalTime = totalTime + this.writeVarLoaderFile();
 
 				if (this.DEV)
-					CommonsUtil.log('Making system call to GAMS and running the model... ');
+					CommonsUtil.log('Making system call to GAMS and running the model...\n');
 % 					CommonsUtil.log('Passing "%s" to GAMS solver and running... ', FilesUtil.shortenPath(this.getModelPath()));
 % 					CommonsUtil.log('Passing "%s" to GAMS solver and running... {\n', FilesUtil.shortenPath(this.getModelPath()));
 				end
 
 				% builds the command line instruction
-				command = ['cd "' FilesUtil.getParentDir(this.getModelPath) '" && '];
-				command = [command 'gams "' strrep(this.modelPath, '/', '\') '" gdx="' strrep(this.getTmpOutputPath(), '/', '\') '"'];
+% 				command = ['cd "' FilesUtil.getParentDir(this.getModelPath) '" && '];
+				command = '';
+				command = [command 'gams "' strrep(this.modelPath, '/', '\') '" gdx="' this.getTmpOutputPath() '"'];
+				
+				if (this.DEV)
+					CommonsUtil.log('Issuing [%s]...\n', command)
+				end
 				
                 % performs a system call
                 [status, cmdout] = system(command, '-echo');
@@ -1288,11 +1294,12 @@ classdef GAMSModel < handle
 		
 		function this = setModelPath(this, modelPath)
 		%SETMODELPATH Sets the path to file containg the actual GAMS code.
-			import util.*
+			import util.FilesUtil
 			
 			if ~strcmp(this.getModelPath(), modelPath)
 				this.setIsReadyForExport(false);
-				this.modelPath = strrep(FilesUtil.getFullPath(modelPath, true), '\', '/');
+% 				this.modelPath = strrep(FilesUtil.getFullPath(modelPath, true), '\', '/');
+				this.modelPath = FilesUtil.sanitizePath(modelPath, true);
 			end
 		end
 		
@@ -1530,6 +1537,8 @@ classdef GAMSModel < handle
 			end
 			
 			% Query will look like wgdx('dump.gdx', variableList{1}, variableList{2}...);
+			%FIXME: we could use a list and do wgdx(list{:}) instead of
+			%using eval(). Faster, cleaner and WAY safer.
 			queryStr = 'wgdx(this.getGdxDumpPath()';
 			
 			variableList = this.getBufferedVariables();
@@ -1576,7 +1585,7 @@ classdef GAMSModel < handle
 			end
 			
 			%header
-			header = sprintf('$gdxin "%s"\n', FilesUtil.getFullPath(this.getGdxDumpPath(), false));
+			header = sprintf('$gdxin "%s"\n', this.getGdxDumpPath());
 			fprintf(fid, "%s", header);
 			
 			%content

@@ -14,6 +14,20 @@ classdef FilesUtil
 			fileattrib(filename, '+h');
 		end
 		
+		function filename = sanitizePath(filename, checkIfExists)
+		% Makes sure the slashes are in the correct direction
+			import util.FilesUtil
+		
+			filename = fullfile(filename);
+			
+			if (nargin < 2)
+				checkIfExists = true;
+			end
+			
+			% I was too lazy to check if the file exists in any other way
+			FilesUtil.getFileName(filename, checkIfExists)
+		end
+		
 		function fullpath = getFullPath(filename, checkIfExists)
 		% Resolves a relative path to an absolute path.
 		%
@@ -44,7 +58,7 @@ classdef FilesUtil
 				TypesUtil.mustBeLogical(checkIfExists);
 			end
 			
-			fullpath = GetFullPath(filename);
+			fullpath = GetFullPath(char(filename));
 			
 			if checkIfExists
 				file = java.io.File(filename);

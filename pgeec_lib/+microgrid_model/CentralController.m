@@ -32,7 +32,7 @@ classdef CentralController < microgrid_model.MGElement
 		% Size of each interval of the simulation, except the first hour (See also: <a href="matlab:doc('microgrid_model.Microgrid/step1stHalfHour')">Microgrid.step1stHalfHour</a> and <a href="matlab:doc('microgrid_model.Microgrid/step2ndHalfHour')">Microgrid.step2ndHalfHour</a>) [not subject to rounding, >=5 minutes] (60)
 		stepDefault {mustBePositive(stepDefault)} = 60;
 		
-		% The time the simulation should start [minutes] (0)
+		% The time the simulation should start [minute of day] (0)
 		%
 		% Note:
 		% The simulation time is counted from midnight on, meaning that a
@@ -534,11 +534,11 @@ classdef CentralController < microgrid_model.MGElement
 			end
 		end
 		
-		function elapsedTime = exportModelString(this, filePath)
+		function elapsedTime = exportModelString(this, filePath, fullExport)
 		% Exports the generated str model to a .txt file and returns the execution time.	
 			import util.CommonsUtil
 			import util.FilesUtil
-		
+			
 			% If no path is informed, display a popup for the user to
 			% select the path to save the file
 			if nargin < 2
@@ -554,10 +554,17 @@ classdef CentralController < microgrid_model.MGElement
 					end
 					return;
 				end
-			else
+% 			else
 				% makes sure the path is absolute
-				filePath = FilesUtil.getFullPath(filePath, false);
+% 				filePath = FilesUtil.getFullPath(filePath, false);
 			end
+			
+			% If fullExport is set to false, exports only the main file.
+			if nargin < 3
+				fullExport = true;
+			end
+			
+			%TODO: finish implemeting the full export option
 			
 			% starts the clock
 			elapsedTime = tic();
@@ -576,7 +583,6 @@ classdef CentralController < microgrid_model.MGElement
 				
 				% retrieves the model file
 				content = this.buildGamsCode();
-				
 				% writes to a file and closes it
 				fprintf(fid, '%s', content);
 				fclose(fid);
@@ -1015,7 +1021,8 @@ classdef CentralController < microgrid_model.MGElement
 		
 		function loadStatement = buildLoadStatement(this)
 		% Builds the load.gms statement
-			loadStatement = sprintf('$include "%s"', util.FilesUtil.getFullPath(this.getVarLoaderFile(), false));
+% 			loadStatement = sprintf('$include "%s"', util.FilesUtil.getFullPath(this.getVarLoaderFile(), false));
+			loadStatement = sprintf('$include "%s"', this.getVarLoaderFile());
 		end
 		
 		function initializeGamsObject(this)
