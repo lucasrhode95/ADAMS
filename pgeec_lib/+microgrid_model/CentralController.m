@@ -371,6 +371,11 @@ classdef CentralController < microgrid_model.MGElement
 			horizon = horizon(end);
 		end
 		
+		function tmpOutputPath = getTmpOutputPath(this)
+		% Returns the path to the temporary GDX output file
+			tmpOutputPath = this.getGamsObject().getTmpOutputPath();
+		end
+		
 		function gdxContent = getTmpOutputBinary(this)
 		% Returns the contents of the temporary GDX output file.
 		%
@@ -1077,7 +1082,7 @@ classdef CentralController < microgrid_model.MGElement
 			
 			% some logging
 			if microgrid_model.MGElement.developmentMode()
-				util.CommonsUtil.log('Loading new case... ');
+				util.CommonsUtil.log('Loading new case...\n');
 			end
 			
 			% variable sanitizing
@@ -1100,9 +1105,11 @@ classdef CentralController < microgrid_model.MGElement
 					warning('Result file found but CentralController says it hasn''t been run. Overriding and loading the result set anyway.')
 				end
 				
+				% little logging
 				if microgrid_model.MGElement.developmentMode()
-					util.CommonsUtil.log(' *result set found, loading it as well* ');
+					util.CommonsUtil.log('Result set "%s" found, loading it as well\n', mgcc.getTmpOutputPath());
 				end
+				
 				
 				gdxFile = loadedVariables.('gdxFile');
 				mgcc.setTmpOutputBinary(gdxFile);
