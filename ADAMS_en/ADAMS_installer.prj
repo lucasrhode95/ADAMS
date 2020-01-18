@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3186292119" file="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer.prj" location="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en" name="ADAMS_installer" preferred-package-location="C:\ADAMS\Installer\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="3333212914" file="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer.prj" location="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en" name="ADAMS_installer" preferred-package-location="C:\ADAMS\Installer\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>ADAMS</param.appname>
     <param.icon>${PROJECT_ROOT}\ADAMS_installer_resources\icon.ico</param.icon>
     <param.icons>
@@ -12,15 +12,15 @@
     <param.authnamewatermark>Lucas Rhode</param.authnamewatermark>
     <param.email>rhode.lucasb@gmail.com</param.email>
     <param.company>Universty of Western Parana (UNIOESTE)</param.company>
-    <param.summary>Optimisation of microgrid operation</param.summary>
-    <param.description>The application consists of a graphical interface meant to configure and run simulations of the optimisation strategy called “day-ahead planning”. In this strategy, the main controller schedules the set-points of all the devices on the microgrid (MG) for, typically, 24-hour horizons. The execution of the day-ahead algorithm means choosing the right combo of generators (and/or batteries) that will deliver the energy needed at the lowest possible cost.</param.description>
-    <param.screenshot>${PROJECT_ROOT}\figures\splash.png</param.screenshot>
+    <param.summary>Optimization of microgrid networks.</param.summary>
+    <param.description>ADAMS is an Windows app built with MATLAB and GAMS that allows the user to create microgrid simulations of a day-ahead planning. It is a result of an undergrad thesis about microgrids presented to the State University of Western Parana (UNIOESTE) on Dec/2019.</param.description>
+    <param.screenshot>${PROJECT_ROOT}\figures\splash_squared.png</param.screenshot>
     <param.guid />
     <param.installpath.string>\Universty of Western Parana (UNIOESTE)\ADAMS\</param.installpath.string>
     <param.installpath.combo>option.installpath.appdata</param.installpath.combo>
     <param.logo>${PROJECT_ROOT}\figures\icon.png</param.logo>
-    <param.install.notes>- GAMS x64 with IBM's CPLEX licence required
-- MATLAB 2019A+ required</param.install.notes>
+    <param.install.notes>- GAMS x64 with IBM's CPLEX licence required (don't forget to add it to your enviroment variables)
+- Source code available on github.com/lucasrhode95/ADAMS</param.install.notes>
     <param.target.install.notes />
     <param.intermediate>C:\ADAMS\Installer\for_testing</param.intermediate>
     <param.files.only>C:\ADAMS\Installer\for_redistribution_files_only</param.files.only>
@@ -47,9 +47,7 @@
 	 
  Input Arguments 
 	 -?  print help on how to use the application 
-	 input arguments 
- Description 
- 	 The application consists of a graphical interface meant to configure and run simulations of the optimisation strategy called “day-ahead planning”. In this strategy, the main controller schedules the set-points of all the devices on the microgrid (MG) for, typically, 24-hour horizons. The execution of the day-ahead algorithm means choosing the right combo of generators (and/or batteries) that will deliver the energy needed at the lowest possible cost.</param.help.text>
+	 input arguments</param.help.text>
     <unset>
       <param.authnamewatermark />
       <param.email />

@@ -12,7 +12,7 @@
     </param.icons>
     <param.summary />
     <param.description />
-    <param.screenshot />
+    <param.screenshot>C:\Users\Lucas Rhode\AppData\Local\Temp\tp59dafeb9_b10a_45f4_a7cb_18f339314de4.png</param.screenshot>
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
@@ -25,7 +25,6 @@
     <unset>
       <param.summary />
       <param.description />
-      <param.screenshot />
       <param.version />
       <param.products.name />
       <param.products.id />
