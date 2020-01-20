@@ -74,7 +74,7 @@ classdef CommonsUtil
 			import lib.cprintf.*
 			
 			% variable that tells if the last log had a new line character at the end.
-			persistent lastLogNewLine;
+			persistent lastLogNewLine
 			if isempty(lastLogNewLine)
 				lastLogNewLine = true;
 			end

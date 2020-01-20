@@ -61,10 +61,17 @@ classdef GAMSModel < handle
 		TYPE_VARIABLE  = 'variable';  % String argument that defines the type of a variable = variable.
 	end
 	
+	properties(Constant, Access = public)
+		STATUS_OK =  0;  % code for when the environment is up and ready for simulation.
+		ERR_RGDX  = -1; % error code for missing rgdx MEX file.
+		ERR_WGDX  = -2; % error code for missing wgdx MEX file.
+		ERR_CMD   = -3; % error code when GAMSModel is unabled to use 'gams' command.
+	end
+	
 	properties(Access = public)
-		DEV        {util.TypesUtil.mustBeLogical(DEV)}        = false; % flag indicating whether or not to execute it in development/debug mode
+		DEV        {util.TypesUtil.mustBeLogical(DEV)}        = false; % flag indicating whether or not to execute it in development/debug mode.
 		KEEP_FILES {util.TypesUtil.mustBeLogical(KEEP_FILES)} = false; % flag indicating whether or not to keep the temporary files after the execution ends.
-		WARNINGS   {util.TypesUtil.mustBeLogical(WARNINGS)}   = true;  % flag indicating whether or not to throw warnings
+		WARNINGS   {util.TypesUtil.mustBeLogical(WARNINGS)}   = true;  % flag indicating whether or not to throw warnings.		
 	end
 	
 	properties(Access = private)
@@ -115,11 +122,20 @@ classdef GAMSModel < handle
 		% variable-exchange .gdx file, the file that GAMS actually reads
 		% when importing dynamic data to its workspace. Changing this is
 		% useful when running multiple models under the same dir.
-			import util.*
+			import util.CommonsUtil
+			import util.TypesUtil
+			import util.FilesUtil
+			import gams.GAMSModel
 
 			if (nargin >= 2)
 				TypesUtil.mustBeLogical(DEV);
 				this.DEV = DEV;
+			end
+			
+			% tests if GAMS is correctly installed
+			[status, msg] = GAMSModel.checkGams();
+			if status ~= GAMSModel.STATUS_OK
+				error('GAMSModel:environmentError', msg);
 			end
 			
 			if this.DEV
@@ -959,7 +975,10 @@ classdef GAMSModel < handle
 		%
 		% timeElapsed = model.EXPORTEXECUTIONREPORT(_) returns the time
 		% elapsed to perform the dump
-			import util.*
+			import util.CommonsUtil
+			import util.FilesUtil
+			import util.TypesUtil
+			
 			elapsedTime = 0;
 			if nargin < 2
 				if this.DEV
@@ -974,10 +993,8 @@ classdef GAMSModel < handle
 					
 					return;
 				end
-				% TODO: Check if the ", filesep," concatenation is really
-				% necessary. This is adding double backslashes because I
-				% THINK will provide better OS compatibility.
-				filePath = [filePath, filesep, fileName];
+				
+				filePath = fullfile(filePath, fileName);
 				
 				if this.DEV
 					CommonsUtil.log(' <%s>\n', filePath);
@@ -991,25 +1008,13 @@ classdef GAMSModel < handle
 			end
 			
 			try
-				fid = fopen(filePath, 'w');
-				
-				if fid == -1
-					error('Unable to create/overwrite file <%s>', filePath);
-				end
-				
-				fprintf(fid, '%s', this.getExecutionLog());
-				fclose(fid);
+				FilesUtil.writeTextFile(filePath, this.getExecutionLog());
 				
 				elapsedTime = toc(elapsedTime);
 				if this.DEV
 					CommonsUtil.log('Done! %5.0f ms\n', elapsedTime*1000);
 				end
-			catch e
-				try
-					fclose(fid);
-				catch
-				end
-				
+			catch e				
 				elapsedTime = toc(elapsedTime);
 				if this.DEV
 					CommonsUtil.log('Fail. %5.0f ms\n', elapsedTime*1000);
@@ -1017,6 +1022,35 @@ classdef GAMSModel < handle
 				
 				rethrow(e);
 			end
+		end
+		
+		function totalTime = exportModelData(this, dir, filename)
+		% Creates everything need to run the model externally
+			import util.FilesUtil
+			import util.CommonsUtil
+			
+			% if no filename is informed, asks for one
+			if nargin < 2
+				dir = '';
+			end
+			
+			if nargin < 3
+				[filename, dir] = FilesUtil.uiPutFile();
+				if ~filename
+					return
+				end
+			end
+			
+			% Exports the GDX data file
+			this.flushVariables(fullfile(dir, newTmpOutName));
+			
+			% Export the var loader file
+			this.writeVarLoaderFile(fullfile(dir, newLoaderName));
+			
+			% Export the main GMS file
+			copyfile(this.getModelPath(), fullfile(dir, newModelName));
+			
+			
 		end
 		% ^^ PUBLIC UTILITIES
 		
@@ -1034,7 +1068,8 @@ classdef GAMSModel < handle
 		% will be available in the data-exchange results file and will be
 		% available for reading. IF, however, you <a href="matlab:doc('gams.GAMSModel/removeTempFiles')">clear the temporary files</a>
 		% the model won't be able to read variables anymore.
-			import util.*
+			import util.CommonsUtil
+			import util.TypesUtil
 			
 			% checks if model is ready for execution before anything
 			if ~this.getIsReadyForExecution()
@@ -1079,7 +1114,7 @@ classdef GAMSModel < handle
 				end
 				
                 % performs a system call
-                [status, cmdout] = system(command, '-echo');
+                [status, cmdout] = system(command);
 				
 				% checks if execution went ok
 				%
@@ -1516,8 +1551,8 @@ classdef GAMSModel < handle
 		% We adopted a pattern where all functions called by the .run()
 		% method are to be timed so the user can evaluate the model
 		% execution time.
-		function timeElapsed = flushVariables(this)
-		%FLUSHVARIABLES Flushes the variable buffer data to the temporary data-exchange file.
+		function timeElapsed = flushVariables(this, dumpPath)
+		% Flushes the variable buffer data to a temporary data-exchange file.
 		%
 		% Since the GAMS API overwrites the exchange file every time it's
 		% called, we need to flush the data all at once. A problem with
@@ -1535,11 +1570,14 @@ classdef GAMSModel < handle
 % 				CommonsUtil.log('Flushing variables to "%s"... ', FilesUtil.shortenPath(this.getGdxDumpPath()));
 				CommonsUtil.log('Flushing variables... ');
 			end
+			if nargin < 2
+				dumpPath = this.getGdxDumpPath();
+			end
 			
 			% Query will look like wgdx('dump.gdx', variableList{1}, variableList{2}...);
 			%FIXME: we could use a list and do wgdx(list{:}) instead of
 			%using eval(). Faster, cleaner and WAY safer.
-			queryStr = 'wgdx(this.getGdxDumpPath()';
+			queryStr = 'wgdx(dumpPath';
 			
 			variableList = this.getBufferedVariables();
 			for i = 1:length(variableList)
@@ -1556,7 +1594,7 @@ classdef GAMSModel < handle
 		end
 				
 		% TODO: consider using $loadDC
-		function timeElapsed = writeVarLoaderFile(this)
+		function timeElapsed = writeVarLoaderFile(this, varLoaderPath)
 		%WRITEVARLOADERFILE Programatically creates the variable-loading GAMS file.
 		%
 		% When loading dynamic variables, the user needs to include a file
@@ -1576,9 +1614,15 @@ classdef GAMSModel < handle
 % 				CommonsUtil.log('Creating GMS loader file: "%s"... ', FilesUtil.shortenPath(this.getVarLoaderPath()));
 				CommonsUtil.log('Creating GMS loader file... ');
 			end
+			if nargin < 2
+				varLoaderPath = this.getVarLoaderPath();
+			end
 			
 			%initialization
-			fid = fopen(this.getVarLoaderPath(), 'w');
+			varLoaderPath = util.FilesUtil.removeExtension(varLoaderPath);
+			varLoaderPath = [varLoaderPath '.gms'];
+			
+			fid = fopen(varLoaderPath, 'w');
 			if (fid == -1)
 				toc(timeElapsed);
 				error(['Unable to create file "', this.getVarLoaderPath(), '"']);
@@ -1641,6 +1685,31 @@ classdef GAMSModel < handle
 		
 			if ~util.TypesUtil.instanceof(object, 'GAMSModel') && ~isempty(object)
 				error(['Variable "', inputname(1), '" must be GAMSModel instance.']);
+			end
+		end
+		
+		function [code, message] = checkGams()
+			import gams.GAMSModel
+			code = GAMSModel.STATUS_OK;
+			message = 'GAMS is ready for simulation.';
+			
+			if exist('wgdx', 'file') ~= 3
+				code = GAMSModel.ERR_WGDX;
+				message = 'wgdx MEX-file not found.';
+				return;
+			end
+			
+			if exist('rgdx', 'file') ~= 3
+				code = GAMSModel.ERR_RGDX;
+				message = 'rgdx MEX-file not found.';
+				return;
+			end
+			
+			[status, cmdout] = system('gams');
+			if status ~= 0
+				code = GAMSModel.ERR_CMD;
+				message = cmdout;
+				return;
 			end
 		end
 	end

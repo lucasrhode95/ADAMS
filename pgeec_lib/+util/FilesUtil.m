@@ -20,12 +20,9 @@ classdef FilesUtil
 		
 			filename = fullfile(filename);
 			
-			if (nargin < 2)
-				checkIfExists = true;
+			if (nargin < 2 || checkIfExists)
+				FilesUtil.checkIfExists();
 			end
-			
-			% I was too lazy to check if the file exists in any other way
-			FilesUtil.getFileName(filename, checkIfExists)
 		end
 		
 		function fullpath = getFullPath(filename, checkIfExists)
@@ -43,7 +40,8 @@ classdef FilesUtil
 		% FILESUTIL.GETFULLPATH(filename, checkIfExists) Resolves file
 		% name to a full path. If checkIfExists is set to true, checks if
 		% file exists an throws an error if not.
-			import util.*
+			import util.TypesUtil
+			import util.FilesUtil
 			import lib.GetFullPath.*
 			
 			if nargin == 0
@@ -61,11 +59,21 @@ classdef FilesUtil
 			fullpath = GetFullPath(char(filename));
 			
 			if checkIfExists
-				file = java.io.File(filename);
-				if ~file.exists()
-					error('resolvePath:CannotResolve', 'Does not exist or failed to resolve absolute path for %s.', filename);
-				end
+				FilesUtil.checkIfExists();
 			end
+		end
+		
+		function checkIfExists(filename)
+			%FIXME: this is a non-document function BUT it should work in
+			%MATLAB's earlier versions.
+			% For 2017b+, use isfile:
+			% if ~isfile(filename)
+			
+			file = java.io.File(filename);
+			if ~file.exists()
+				error('resolvePath:CannotResolve', 'Does not exist or failed to resolve absolute path for %s.', filename);
+			end
+			
 		end
 		
 		function parentPath = getParentDir(rootDir, checkIfExists)
@@ -90,22 +98,36 @@ classdef FilesUtil
 			parentPath = char(currentDir.getParent());
 		end
 		
-		function fileName = getFileName(filePath, checkIfExists)
+		function filename = getFileName(filepath, keepExtension)
 		% Returns the file name from a file path.
 			import util.FilesUtil
-			import util.TypesUtil
-		
-			if nargin < 2
-				checkIfExists = true;
-			else
-				TypesUtil.mustBeLogical(checkIfExists);
-			end
+			[~, filename, ext] = fileparts(filepath);
 			
-			file = java.io.File(FilesUtil.getFullPath(filePath, checkIfExists));
-			fileName = char(file.getName());
+			if nargin < 2 || keepExtension
+				filename = [filename ext];
+			end
 		end
 		
-		function shortenedPath = shortenPath (originalPath)
+		function filename = removeExtension(filepath)
+		% Removes the extension of a file path
+			[dir, filename] = fileparts(filepath);
+			filename = fullfile(dir, filename);
+		end
+		
+		function writeTextFile(filepath, content, permission)
+		% Simple routine to write a text file
+			import util.TypesUtil
+			
+			if nargin < 3 || ~TypesUtil.isTxt(permission)
+				permission = 'w';
+			end
+			
+			fileID = fopen(filepath, permission);
+			fprintf(fileID, '%s', content);
+			fclose(fileID);
+		end
+		
+		function shortenedPath = shortenPath(originalPath)
 		% Returns a short version of a long path.
 			import util.StringsUtil
 			
@@ -119,176 +141,114 @@ classdef FilesUtil
 			shortenedPath = [pathParts{1}, filesep, '...', filesep, pathParts{end-1}, filesep, pathParts{end}];
 		end
 		
-		function bufferPath = getSetUiBufferPath(bufferPath)
-		% Getter/setter of the persistent buffer file path. This allows the program to remember the last opened directory even after MATLAB has been closed.
-			persistent persistentBufferPath;
-			
-			if nargin
-				persistentBufferPath = bufferPath;
-			elseif isempty(persistentBufferPath)
-				bufferPath = false;
-			else
-				bufferPath = persistentBufferPath;
-			end
-		end
-		
-		function isBufferOn = getSetUiBuffer(isBufferOn)
-		% Getter/setter to turn On or Off the UIGet/UISet buffer
-			persistent persistentIsBufferOn;
-			
-			if nargin
-				persistentIsBufferOn = isBufferOn;
-			elseif isempty(persistentIsBufferOn)
-				isBufferOn = false;
-			else
-				isBufferOn = persistentIsBufferOn;
-			end
-		end
-		
-		function saveLastDir(lastDir)
-		% Saves the last used dir path to a file
-		% 
-		% By saving the last path to a file, it allows us to retrieve the
-		% last used dir even after MATLAB has been closed and reopened.
-		
-			% if the buffer is enabled and has a path available, saves it on disk.
-			if ~isempty(util.FilesUtil.getSetUiBufferPath()) && util.FilesUtil.getSetUiBuffer()
-				try
-					fid = fopen(util.FilesUtil.getSetUiBufferPath(), 'w');
-					fprintf(fid, '%s', lastDir);
-					fclose(fid);
-				catch
-					try fclose(fid); catch ; end
-				end
-			end
-		end
-		
-		function lastDir = getLastDirFromCache()
-		% Reads the last used dir path from a file
-		%
-		% If there is no cache path available, returns an empty variable.
-		
-			if ~isempty(util.FilesUtil.getSetUiBufferPath()) && util.FilesUtil.getSetUiBuffer()
-				try
-					lastDir = fileread(util.FilesUtil.getSetUiBufferPath());
-				catch
-					lastDir = '';
-				end
-			else
-				lastDir = '';
-			end
-		end
-		
-		function lastDir = getSetLastDir(lastDir)
-		% Persistent variable that holds the last dir, so that the uiPut/uiGet methods have some memory
-		%
-		% To reset this, one can simply pass an empty value to it
-		% To fully disable this functionality, use util.FilesUtil.getSetUiBuffer(false)
-			
-			% if the cache functionality is disabled, does nothing
-			if ~util.FilesUtil.getSetUiBuffer()
-				lastDir = '';
-				return;
-			end
-		
-			persistent persistentLastDir;
-			
-			% if the function is being used to SET the value: saves and return.
-			if nargin
-				persistentLastDir = lastDir;
-				util.FilesUtil.saveLastDir(lastDir);
-				return;
-			end
-			
-			% if the last used dir is already in memory, returns it. Tries
-			% to read from cache otherwise
-			if ~isempty(persistentLastDir)
-				lastDir = persistentLastDir;
-				return;
-			else
-				persistentLastDir = util.FilesUtil.getLastDirFromCache();
-				lastDir = persistentLastDir;
-			end
-		end
-		
-		function filePath = uiPutFile(varargin)
+		function varargout = uiPutFile(varargin)
 		% Open dialog box for saving files, same as MATLAB's original one,
 		% but always return only one file path. If no file was selected,
 		% returns an empty string
-			import util.TypesUtil
 			import util.FilesUtil
 			
-			if isempty(util.FilesUtil.getSetLastDir())
-				[fileName, filePath] = uiputfile(varargin{:});
+			if nargout == 0
+				return;
+			elseif nargout == 1
+				varargout{1} = FilesUtil.uiGetPutFile(false, varargin{:});
+			elseif nargout == 2
+				[varargout{1}, varargout{2}] = FilesUtil.uiGetPutFile(false, varargin{:});
 			else
-				if isempty(varargin)
-					[fileName, filePath] = uiputfile(util.FilesUtil.getSetLastDir());
-				else
-					filter = [util.FilesUtil.getSetLastDir(), filesep, varargin{1}];
-					varargin(1) = [];
-					[fileName, filePath] = uiputfile(filter, varargin{:});
-				end
-			end
-			
-			if ~TypesUtil.isTxt(fileName) || ~TypesUtil.isTxt(filePath)
-				filePath = '';
-				return
-			else
-				util.FilesUtil.getSetLastDir(filePath);
-			end
-			
-			% TODO: Check if the ", filesep," concatenation is really
-			% necessary. This is adding double backslashes because I
-			% THINK will provide better OS compatibility.
-			%
-			% makes sure the path is absolute
-			filePath = FilesUtil.getFullPath([filePath, filesep, fileName], false);
+				error('FilesUtil:incorrectNumberOfOutputs', 'Too many output arguments.');
+			end	
 		end
 		
-		function filePath = uiGetFile(varargin)
+		function varargout = uiGetFile(varargin)
 		% Open file selection dialog box, same as MATLAB's original one,
 		% but always return only one file path. If no file was selected,
 		% returns an empty string
-			import util.*
+			import util.FilesUtil
 			
-			if isempty(util.FilesUtil.getSetLastDir())
-				[fileName, filePath] = uigetfile(varargin{:});
+			if nargout == 0
+				return;
+			elseif nargout == 1
+				varargout{1} = FilesUtil.uiGetPutFile(true, varargin{:});
+			elseif nargout == 2
+				[varargout{1}, varargout{2}] = FilesUtil.uiGetPutFile(true, varargin{:});
 			else
-				if isempty(varargin)
-					[fileName, filePath] = uigetfile(util.FilesUtil.getSetLastDir());
-				else
-					% handles the case where theres a list of filters
-					filterList = varargin{1};
-					if iscell(filterList)
-						filter     = filterList{1};
-						for i = 2:length(filterList)
-							filter = [filter, ';', filterList{i}];
-						end
-
-						filter = fullfile(util.FilesUtil.getSetLastDir(), filter);
-					else
-						filter = fullfile(util.FilesUtil.getSetLastDir(), filterList);
-					end
-					
-					varargin(1) = [];
-
-					[fileName, filePath] = uigetfile(filter, varargin{:});
-				end
+				error('FilesUtil:incorrectNumberOfOutputs', 'Too many output arguments.');
+			end
+		end
+		
+		function isCacheEnabled = cacheStatus(varargin)
+		% Mirror to <a href="matlab:doc('util.LastDirHelper')">LastDirHelper</a>.<a href="matlab:doc('util.LastDirHelper/status')">status</a>.
+			import util.LastDirHelper
+			isCacheEnabled = util.LastDirHelper.status(varargin{:});
+		end
+		
+		function varargout = uiGetPutFile(getFile, varargin)
+		% Either puts or gets a file, depending of the getFile flag
+			import util.FilesUtil
+			import util.TypesUtil
+			import util.StringsUtil
+			import util.LastDirHelper
+			
+			% arguments checking
+			if nargout > 2
+				error('FilesUtil:incorrectNumberOfOutputs', 'Too many output arguments.');
 			end
 			
+			% filter default value
+			if isempty(varargin)
+				varargin = {'*.*'};
+			end
+			
+			% adds directory to filter
+			filter = varargin{1};
+			filter = StringsUtil.join(filter, ';');
+			filter = fullfile(LastDirHelper.get(), filter);
+			varargin(1) = []; % removes filters from varargin. This will be passed separatedely
+			
+			% switches between methods
+			if getFile
+				[fileName, filePath] = uigetfile(filter, varargin{:});
+			else
+				[fileName, filePath] = uiputfile(filter, varargin{:});
+			end
+			
+			% if the user cancels the selection, returns an empty string
 			if ~TypesUtil.isTxt(fileName) || ~TypesUtil.isTxt(filePath)
 				filePath = '';
-				return
+				fileName = '';
 			else
-				util.FilesUtil.getSetLastDir(filePath);
+				LastDirHelper.set(fullfile(filePath, fileName))
 			end
 			
-			% TODO: Check if the ", filesep," concatenation is really
-			% necessary. This is adding double backslashes because I
-			% THINK will provide better OS compatibility.
-			%
-			% makes sure the path is absolute
-			filePath = FilesUtil.getFullPath(fullfile(filePath, fileName), false);
+			% switches between output modes
+			if nargout <= 1
+				varargout{1} = fullfile(filePath, fileName);
+			else
+				varargout{1} = fileName;
+				varargout{2} = filePath;
+			end
+		end
+		
+		function selpath = uiGetDir(varargin)
+		% Open folder selection dialog box, same as MATLAB's original one,
+		% but always return only one file path. If no file was selected,
+		% returns an empty string
+			import util.FilesUtil
+			import util.TypesUtil
+			import util.LastDirHelper
+			
+			% prompts the user with a dialog box
+			if isempty(LastDirHelper.get())
+				selpath = uigetdir([], varargin{:});
+			else
+				selpath = uigetdir(LastDirHelper.get(), varargin{:});
+			end
+			
+			% if the result is valid, buffers it
+			if ~TypesUtil.isTxt(selpath)
+				selpath = '';
+			else
+				LastDirHelper.set(selpath);
+			end
 		end
 		
 		function varargout = writeExcel(varargin)
