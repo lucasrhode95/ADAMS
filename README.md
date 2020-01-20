@@ -28,9 +28,9 @@ TSChart: a sub-app to visualize time-series
 #### For developers
 ADAMS was not meant to have a user interface at first. My idea was to build a framework with which people could easily create small but expressive scripts to simulate microgrid optimization. That's why the infrastructure is divided in three levels:
 
-1. [GAMS communication](pgeec_lib/+gams/GAMSModel.m): very flexible class, the idea is that, if you can write a GAMS model, this class will help you to dinamically load parameters from MATLAB into the model and vice-versa (way better then GAMS-MATLAB original API)
+1. [GAMS communication](pgeec_lib/+gams/GAMSModel.m): very flexible class, the idea is that, if you can write a GAMS model, this class will help you to dinamically load parameters from MATLAB into the model and vice-versa (way better then GAMS-MATLAB original API);
 
-1. [Microgrid modeling](pgeec_lib/+microgrid_model): the heart of everything. This actually creates GAMS code dinamically so that, with few lines, you can have a microgrid up and running, ready for simulations. Each class in this package represents a configurable microgrid element (like a solar panel or a diesel gen), you instantiate new objects and you add them into your microgrid at will.
+1. [Microgrid modeling](pgeec_lib/+microgrid_model): the heart of everything. This actually creates GAMS code dinamically so that, with few lines, you can have a microgrid up and running, ready for simulations. Each class in this package represents a configurable microgrid element (like a solar panel or a diesel gen), you instantiate new objects and you add them into your microgrid at will;
 
 1. Graphical interface: on top of everything, the GUI organizes calls to item #2 so that it's very very easy to create simulation scenarios.
 
