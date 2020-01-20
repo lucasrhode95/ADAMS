@@ -25,4 +25,17 @@ App's main screen:
 TSChart: a sub-app to visualize time-series
 ![Main screen](ADAMS_en/figures/ss2.png)
 
+#### For developers
+ADAMS was not meant to have a user interface at first. My idea was to build a framework with which people could easily create small but expressive scripts to simulate microgrid optimization. That's why the infrastructure is divided in three levels:
+1. [GAMS communication](pgeec_lib/+gams/GAMSModel.m): very flexible class, the idea is that, if you have a GAMS model, you can use this to dinamically load parameters into it and retrieve the results in an easy way.
+
+1. [Microgrid modeling](pgeec_lib/+microgrid_model): the heart of everything. This actually creates GAMS code dinamically so that, with few lines, you can have a microgrid up and running, ready for simulations. Each class in this package represents a configurable microgrid element (like a solar panel or a diesel gen), you instantiate new objects and you add them into your microgrid at will.
+
+1. Graphical interface: on top of everything, the GUI organizes calls to item #2 so that it's very very easy to create simulation scenarios.
+
+I intend to publish them separately in the future, each one with their own manual. But documenting and testing everything is very cumbersome as we all know.
+
+Most of the infrastructure is implemented with backward compatibility in mind BUT I was in a hurry and had to use MATLAB's App Designer for the GUI, which means it needs MATLAB R2019a or later to run.
+Since we need MATLABs runtime, the app is HUGE (700MB+) - I would've made it using another language but the idea was to make a framework that could easily communicate with Simulink if necessary.
+
 Found any bugs? Feel free to open a new issue, contact me @ rhode.lucasb@gmail.com or to fix it yourself, after all we are on GitHub!
