@@ -8,7 +8,7 @@ The application consists of a graphical interface meant to configure and run sim
 ADAMS actually uses a third-party software to solve the optimisation problem: [GAMS](https://www.gams.com/products/introduction/). What ADAMS does is provide an interface so that the end-user doesn't need to worry about mathematical modeling in GAMS (which can be intimidating).
 
 The workflow is as follows:
-1. The user sets up the simulation in ADAMS, choosing from a list of available MG elements (diesel generators, solar panels, loads etc);
+1. The user sets up the simulation in ADAMS, choosing from a list of available MG elements (diesel generators, solar panels, loads etc) in a point-and-click fashion;
 1. ADAMS dynamically generates a mathematical model and sends it to GAMS;
 1. GAMS solves the optimisation problem and sends the results back to ADAMS;
 1. ADAMS display the results in a nice point-and-click kind of way.
