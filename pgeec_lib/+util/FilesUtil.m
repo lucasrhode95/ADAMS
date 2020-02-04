@@ -21,7 +21,7 @@ classdef FilesUtil
 			filename = fullfile(filename);
 			
 			if (nargin < 2 || checkIfExists)
-				FilesUtil.checkIfExists();
+				FilesUtil.checkIfExists(filename);
 			end
 		end
 		
@@ -59,7 +59,7 @@ classdef FilesUtil
 			fullpath = GetFullPath(char(filename));
 			
 			if checkIfExists
-				FilesUtil.checkIfExists();
+				FilesUtil.checkIfExists(filename);
 			end
 		end
 		
@@ -147,9 +147,7 @@ classdef FilesUtil
 		% returns an empty string
 			import util.FilesUtil
 			
-			if nargout == 0
-				return;
-			elseif nargout == 1
+			if nargout <= 1
 				varargout{1} = FilesUtil.uiGetPutFile(false, varargin{:});
 			elseif nargout == 2
 				[varargout{1}, varargout{2}] = FilesUtil.uiGetPutFile(false, varargin{:});
@@ -164,9 +162,7 @@ classdef FilesUtil
 		% returns an empty string
 			import util.FilesUtil
 			
-			if nargout == 0
-				return;
-			elseif nargout == 1
+			if nargout <= 1
 				varargout{1} = FilesUtil.uiGetPutFile(true, varargin{:});
 			elseif nargout == 2
 				[varargout{1}, varargout{2}] = FilesUtil.uiGetPutFile(true, varargin{:});
@@ -183,48 +179,55 @@ classdef FilesUtil
 		
 		function varargout = uiGetPutFile(getFile, varargin)
 		% Either puts or gets a file, depending of the getFile flag
-			import util.FilesUtil
 			import util.TypesUtil
 			import util.StringsUtil
 			import util.LastDirHelper
+			import util.CommonsUtil
 			
 			% arguments checking
 			if nargout > 2
 				error('FilesUtil:incorrectNumberOfOutputs', 'Too many output arguments.');
 			end
 			
+			CommonsUtil.log('Waiting for user to select a file...\n');
+			
 			% filter default value
 			if isempty(varargin)
 				varargin = {'*.*'};
 			end
 			
-			% adds directory to filter
+			% add directory to filter
 			filter = varargin{1};
 			filter = StringsUtil.join(filter, ';');
-			filter = fullfile(LastDirHelper.get(), filter);
-			varargin(1) = []; % removes filters from varargin. This will be passed separatedely
+			dir = fileparts(filter);
+			if isempty(dir) % if directory is informed, uses cached value
+				filter = fullfile(LastDirHelper.get(), filter);
+			end
+			varargin(1) = []; % removes filters from varargin. Those will be passed separately
 			
 			% switches between methods
 			if getFile
-				[fileName, filePath] = uigetfile(filter, varargin{:});
+				[filename, filepath] = uigetfile(filter, varargin{:});
 			else
-				[fileName, filePath] = uiputfile(filter, varargin{:});
+				[filename, filepath] = uiputfile(filter, varargin{:});
 			end
 			
-			% if the user cancels the selection, returns an empty string
-			if ~TypesUtil.isTxt(fileName) || ~TypesUtil.isTxt(filePath)
-				filePath = '';
-				fileName = '';
-			else
-				LastDirHelper.set(fullfile(filePath, fileName))
+			% if the user has canceled the selection, returns an empty string
+			if ~TypesUtil.isTxt(filename) || ~TypesUtil.isTxt(filepath)
+				filepath = '';
+				filename = '';
+				CommonsUtil.log('Action cancelled by user.\n');
+			else % otherwise, caches the path that the user selected
+				LastDirHelper.set(filepath);
+				CommonsUtil.log('Selected "%s"\n', fullfile(filepath, filename));
 			end
 			
 			% switches between output modes
 			if nargout <= 1
-				varargout{1} = fullfile(filePath, fileName);
+				varargout{1} = fullfile(filepath, filename);
 			else
-				varargout{1} = fileName;
-				varargout{2} = filePath;
+				varargout{1} = filename;
+				varargout{2} = filepath;
 			end
 		end
 		
@@ -235,6 +238,9 @@ classdef FilesUtil
 			import util.FilesUtil
 			import util.TypesUtil
 			import util.LastDirHelper
+			import util.CommonsUtil
+			
+			CommonsUtil.log('Waiting for user to select a folder...\n');
 			
 			% prompts the user with a dialog box
 			if isempty(LastDirHelper.get())
@@ -243,11 +249,13 @@ classdef FilesUtil
 				selpath = uigetdir(LastDirHelper.get(), varargin{:});
 			end
 			
-			% if the result is valid, buffers it
+			% if the user has canceled the action, returns an empty string
 			if ~TypesUtil.isTxt(selpath)
 				selpath = '';
-			else
+				CommonsUtil.log('Action cancelled by user.\n');
+			else % otherwise, caches the path that the user selected
 				LastDirHelper.set(selpath);
+				CommonsUtil.log('Selected "%s"\n', selpath);
 			end
 		end
 		

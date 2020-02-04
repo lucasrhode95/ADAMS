@@ -174,7 +174,7 @@ classdef LastDirHelper
 			
 			% checks if cache file exists
 			try
-				FilesUtil.checkIfExists(LastDirHelper.location())
+				FilesUtil.checkIfExists(LastDirHelper.location());
 			catch
 				CommonsUtil.log('Cache file not found @ "%s".\n', LastDirHelper.location());
 				lastDir = fallback_dir;
