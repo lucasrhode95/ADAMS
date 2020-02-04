@@ -1,6 +1,1 @@
-% import my_plot.*
-% import gams.GAMSModel
-
-addpath('../');
-addpath('../my_plot');
-addpath('../gams');
+addpath('C:\GAMS\win64\25.0');

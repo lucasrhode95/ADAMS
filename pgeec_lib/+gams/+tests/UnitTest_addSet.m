@@ -1,7 +1,7 @@
 %% SETUP
 clear; clc;
-
-import gams.*
+import gams.GAMSModel
+gams.tests.startup
 
 debugMode = true;
 keepFiles = false;
@@ -9,9 +9,6 @@ modelFile = '+gams/+tests/model_addSet.gms';
 
 % the total cost should be 2.256551342812934e+02, this is tested after
 % every call to .run()
-
-
-
 
 
 
@@ -213,3 +210,8 @@ assert(model.read('z')-2.256551342812934e+02 <= 1e-6);
 % timeInHours = cumsum(model.read('dt'));
 % fprintf('total microgrid operation cost in %4.2f h: %4.4f\n', timeInHours(end), model.read('z'));
 % my_line_plot(timeInHours, model.read('soc'));
+
+
+
+
+disp('TEST PASSED.');

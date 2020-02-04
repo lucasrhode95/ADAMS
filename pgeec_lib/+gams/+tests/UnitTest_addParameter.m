@@ -1,10 +1,7 @@
 %% SETUP
 clear; clc;
-
-import my_plot.*
-import gams.*
-
-% tests.startup
+import gams.GAMSModel
+gams.tests.startup
 
 debugMode = true;
 keepFiles = false;
@@ -105,3 +102,5 @@ model.run();
 assert(model.read('z')-2.256551342812934e+02 <= 1e-6);
 
 fprintf('Total microgrid operation cost: %4.4f\n', model.read('z'));
+
+disp('TEST PASSED.');

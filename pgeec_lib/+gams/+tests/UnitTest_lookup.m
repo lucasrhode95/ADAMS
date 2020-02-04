@@ -1,7 +1,7 @@
 %% SETUP
 clear; clc;
-
-import gams.*
+import gams.GAMSModel
+gams.tests.startup
 
 debugMode = true;
 keepFiles = false;
@@ -107,3 +107,8 @@ assert(model.read('z')-2.256551342812934e+02 <= 1e-6);
 model.read('map_th') % original Set
 model.read('demandas_contratadas') % lookup set
 [value, labeled] = model.read('soc', 't') % also very easy is to perform a lookup+read
+
+
+
+
+disp('TEST PASSED.');
