@@ -89,19 +89,19 @@ classdef (Abstract) Load < microgrid_model.MGElement
 		% Reads an Excel or .csv file containing a time series of demand values
 		%
 		% The file should consist of two columns - a time column and a
-		% power output column. There's no limit for row count, although the
-		% simulation will get slower for longer simulations.
+		% power output column. There's no limit for row count.
 		%
 		% If the first row is textual, it will be considered to be a header
 		% and will be ignored.
 		%
-		% Time column: the first column of the file, positive values and
-		% monotonically increasing, in minutes. The initial time is
-		% considered to be midnight, meaning that a value of 65 is
-		% interpreted as the demand at 01:05am.
+		% Time column [minutes]: the first column of the file, positive
+		% values and strictly increasing. The initial time is considered to
+		% be midnight, meaning that a value of 65 is interpreted as the
+		% demand at 01:05am. Also, since this is considered to be an
+		% aggregate, you can't start the time column at zero minutes.
 		%
-		% Generation column: second column of the file, should contain the
-		% average demand [kW] computed at the end of the respective interval.
+		% Power column [kW]: second column of the file, should contain the
+		% average power computed at the end of the respective interval.
 		%
 		% Example of file:
 		%
@@ -128,22 +128,13 @@ classdef (Abstract) Load < microgrid_model.MGElement
 			
 			% allowed file extensions
 			fileExtensions = {'*.xls*'; '*.csv'};
+			title = 'Select a file containing the power time-series';
 		
 			% If no path is informed, display a popup for the user to
 			% select the path to save the file
 			if nargin < 2
-				if this.DEV
-					CommonsUtil.log('Waiting for user input... ');
-				end
-				
-				filePath = FilesUtil.uiGetFile(fileExtensions);
-				
-				if isempty(filePath)
-					if this.DEV
-						CommonsUtil.log('Canceled\n');
-					end
-					return;
-				end
+				filePath = FilesUtil.uiGetFile(fileExtensions, title);
+				if isempty(filePath); return; end
 				
 				if this.DEV
 					CommonsUtil.log('Done.\n');
@@ -183,9 +174,9 @@ classdef (Abstract) Load < microgrid_model.MGElement
 			
 			% verifies if time array is numeric and increasing
 			try
-				validateattributes(timeArray, {'numeric'}, {'nonnegative', 'increasing', 'nonempty'});
+				validateattributes(timeArray, {'numeric'}, {'positive', 'increasing', 'nonempty'});
 			catch
-				error('Time column expected to be numeric and increasing.');
+				error('Time column expected to be positive (do not start on 0) and increasing.');
 			end
 			
 			% verifies if demand array is numeric
@@ -298,8 +289,15 @@ classdef (Abstract) Load < microgrid_model.MGElement
 			end
 			
 			% makes sure both demand curves start and end at the same time (repeats the load profile pattern multiple times if necessary)
-			[spannedProfile, baseTime] = TimeSeriesUtil.respan(oldTime, ...
-				oldSamples, newTimeArray(1), newTimeArray(end), 'default', 'outside', 'inside');
+			gap = newTimeArray(1) + mod(1440-rem(oldTime(end), 1440), 1440);
+			options = {
+				'start-time', newTimeArray(1);
+				'end-time', newTimeArray(end);
+				'gap', gap;
+				'left-border', 'enlarge';
+				'right-border', 'enlarge';
+			};
+			[baseTime, spannedProfile] = TimeSeriesUtil.respan(oldTime, oldSamples, options);
 			
 			if this.DEV
 				CommonsUtil.log('Demand transposed. Original: %d samples. New: %d samples\n', length(oldSamples), length(spannedProfile));

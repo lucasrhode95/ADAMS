@@ -1,228 +1,71 @@
 classdef TimeSeriesUtil
 	% Collection of commonly needed methods for handling time series
+	%
+	% Notice: due to platform limitations, this class have a maximum time
+	% precision of 1e-12 time units. If you need more precision than this,
+	% you should use submultiples of second (e.g. nano and picoseconds).
 	
 	methods(Access = public, Static)
+		function [newTime, newSamples] = respan(oldTime, oldSamples, options)
+		% Replicates a waveform beyond its original duration
+		%
+		% TODO: insert documentation here
+			import util.TypesUtil
+			import util.TimeSeriesUtil
+			
+			if nargin >= 3
+				% processes user input
+				[options, oldTime, oldSamples] ...
+					= TimeSeriesUtil.respanOptions(oldTime, oldSamples, options);
+			else
+				% use default options
+				[options, oldTime, oldSamples] ...
+					= TimeSeriesUtil.respanOptions(oldTime, oldSamples);
+			end
+			% sample count
+			sampleCount = length(oldTime);
+			% timestep for each sample (last one is adjustable)
+			dt = [diff(oldTime); options('gap')];
+			% original duration
+			T = oldTime(end)+options('gap') - oldTime(1);
+			
+			% hard-to-understand calculations that were hidden
+			[i0, t0] = TimeSeriesUtil.getStartingPoint(oldTime(1), T, dt, options);
+			
+			% changes order of the array elements
+			newSamples = TimeSeriesUtil.swap(oldSamples, i0);
+			dt         = TimeSeriesUtil.swap(dt, i0);
+			
+			% integer time-replication
+			N       = fix(round((options('end-time')-t0+options('gap'))/T, 12));
+			newTime = t0+cumsum([0;...
+				TimeSeriesUtil.resizeArray(dt, max(0, sampleCount*N-1))]);
+			
+			% fractional time-replication
+			if length(newTime)>1
+				dt = TimeSeriesUtil.swap(dt, length(dt));
+			end
+			remainder = options('end-time')-newTime(end);
+			i1        = find(cumsum(dt) >= remainder, 1)*(remainder>0); % if the remainder is 0, i1 should be 0 as well
+			newTime   = [newTime; newTime(end)+cumsum(dt(1:i1))];
+			
+			% samples replication
+			newSamples = TimeSeriesUtil.resizeArray(newSamples, length(newTime));
+			
+			% post-processing
+			if options('use-row')
+				% make sure the output is in the same format as the input
+				newTime = newTime';
+				newSamples = newSamples';
+			end
+			
+			% cut borders
+			[newTime, newSamples] = TimeSeriesUtil.truncateBorders(newTime, newSamples, options);
+		end
 		
-		function [newSamples, newTime, actualStart, actualEnd] = respan(oldTime, oldSamples, startTime, endTime, truncation, leftBorder, rightBorder)
-			% VV INPUT SANITIZING
-			if nargin >= 5
-				util.TypesUtil.mustBeTxt(truncation);
-			else
-				truncation = 'default';
-			end
-			if nargin >= 6
-				util.TypesUtil.mustBeTxt(leftBorder);
-				if ~strcmp(leftBorder, 'outside') && ~strcmp(leftBorder, 'inside')
-					error('Invalid argument value. Valid ones are inside|outside');
-				end
-			else
-				leftBorder = 'outside';
-			end
-			if nargin >= 7
-				util.TypesUtil.mustBeTxt(rightBorder);
-				if ~strcmp(rightBorder, 'outside') && ~strcmp(rightBorder, 'inside')
-					error('Invalid argument value. Valid ones are inside|outside');
-				end
-			else
-				rightBorder = 'outside';
-			end
-			validateattributes(startTime, {'numeric'}, {'finite'});
-			validateattributes(endTime, {'numeric'}, {'finite', '>', startTime});
-			validateattributes(oldTime, {'numeric'}, {'finite', 'increasing'});
-			validateattributes(oldSamples, {'numeric'}, {'finite'});
-			if length(oldTime) ~= length(oldSamples)
-				error('oldTime and oldSamples must have the same length');
-			end
-			if ~isrow(oldTime) && ~iscolumn(oldTime)
-				error('Time array must be one-dimensional.');
-			end
-			if ~isrow(oldSamples) && ~iscolumn(oldSamples)
-				error('Samples array must be one-dimensional.');
-			end
-
-			useRow = isrow(oldTime);
-
-			if useRow
-				if iscolumn(oldSamples)
-					oldSamples = oldSamples';
-				end
-			else
-				if isrow(oldSamples)
-					oldSamples = oldSamples';
-				end
-			end
-			% ^^ INPUT SANITIZING
-
-			% VV GENERATE SAMPLES BEFORE THE ACTUAL SIGNAL
-			timeStep = diff(oldTime);
-
-			if useRow
-				timeStep = [timeStep, timeStep(end)];
-			else
-				timeStep = [timeStep; timeStep(end)];
-			end
-
-			% variable initialization
-			prependTime = [];
-			prependSamples = [];
-
-			% where to stop
-			outsideBorder = strcmp(leftBorder, 'outside');
-			
-			% where to start
-			now = oldTime(end);
-			if ~outsideBorder
-				now = now - timeStep(end);
-			end
-			
-			% where to start
-			now = oldTime(1);
-			
-			iterator = length(timeStep);
-			while startTime < now
-				if endTime < now
-					continue;
-				end
-				
-				if outsideBorder
-					% prepares the iteration, either goes back further into the old
-					% array or restarts at the end of it
-					now = now - timeStep(iterator);
-					if iterator == 1
-						iterator = length(timeStep);
-					else
-						iterator = iterator - 1;
-					end
-				end
-				
-				if useRow
-					prependTime    = [now, prependTime];
-					prependSamples = [oldSamples(iterator), prependSamples];
-				else
-					prependTime    = [now; prependTime];
-					prependSamples = [oldSamples(iterator); prependSamples];
-				end
-				
-				if ~outsideBorder
-					% prepares the iteration, either goes back further into the old
-					% array or restarts at the end of it
-					now = now - timeStep(iterator);
-					if iterator == 1
-						iterator = length(timeStep);
-					else
-						iterator = iterator - 1;
-					end
-				end
-			end
-			% ^^ GENERATE SAMPLES BEFORE THE ACTUAL SIGNAL
-
-			% VV BASE WINDOW
-			baseFilter  = startTime <= oldTime & oldTime <= endTime;
-			baseTime    = oldTime(baseFilter);
-			baseSamples = oldSamples(baseFilter);
-			% ^^ BASE WINDOW
-
-			% VV GENERATE SAMPLES AFTER THE ACTUAL SIGNAL
-			timeStep = diff(oldTime);
-
-			if useRow
-				timeStep = [timeStep(end), timeStep];
-			else
-				timeStep = [timeStep(end); timeStep];
-			end
-
-			appendTime = [];
-			appendSamples = [];
-			
-			% where to stop
-			outsideBorder = strcmp(rightBorder, 'outside');
-			
-			% where to start
-			now = oldTime(end);
-			if ~outsideBorder
-				now = now + timeStep(1);
-			end
-			
-			iterator = 1;
-			while now < endTime
-				
-				if outsideBorder
-					% prepares the iteration, either goes back further into the old
-					% array or restarts at the end of it
-					now = now + timeStep(iterator);
-					if iterator == length(timeStep)
-						iterator = 1;
-					else
-						iterator = iterator + 1;
-					end
-				end
-				
-				if now < startTime
-					continue;
-				end
-				
-				if useRow
-					appendTime    = [appendTime, now];
-					appendSamples = [appendSamples, oldSamples(iterator)];
-				else
-					appendTime    = [appendTime; now];
-					appendSamples = [appendSamples; oldSamples(iterator)];
-				end
-				
-				if ~outsideBorder
-					% prepares the iteration, either goes back further into the old
-					% array or restarts at the end of it
-					now = now + timeStep(iterator);
-					if iterator == length(timeStep)
-						iterator = 1;
-					else
-						iterator = iterator + 1;
-					end
-				end
-			end
-			% ^^ GENERATE SAMPLES AFTER THE ACTUAL SIGNAL
-
-			% VV RESULT TREATMENT
-			newTime    = [prependTime; baseTime; appendTime];
-			newSamples = [prependSamples; baseSamples; appendSamples];
-
-			actualStart = newTime(1);
-			actualEnd   = newTime(end);
-
-			if strcmp(truncation, 'default')
-				% do nothing
-			elseif strcmp(truncation, 'truncate')
-				newTime(1)   = startTime;
-				newTime(end) = endTime;
-			elseif strcmp(truncation, 'snap-left')
-				timeStep = diff(newTime);
-				if useRow
-					newTime = cumsum([startTime, timeStep]);
-				else
-					newTime = cumsum([startTime; timeStep]);
-				end
-			elseif strcmp(truncation, 'snap-right')
-				timeStep = diff(newTime(end:-1:1));
-				if useRow
-					newTime = cumsum([endTime, timeStep]);
-				else
-					newTime = cumsum([endTime; timeStep]);
-				end
-
-				newTime = newTime(end:-1:1);
-			else
-				error('Invalid value for argument handleBorders. Valid values: truncate|snap-left|snap-right');
-			end
-			% ^^ RESULT TREATMENT
-			
-			% VV DEBUG
-% 			stairs(prependTime, prependSamples, '*');
-% 			hold on;
-% 			stairs(newTime, newSamples);
-% 			stairs(baseTime, baseSamples, '*');
-% 			stairs(appendTime, appendSamples, '*');
-% 			hold off;
-			% ^^ DEBUG
+		function array = swap(array, i)
+		% Swaps the last half with the first half of an array.
+			array = [array(i:end); array(1:i-1)];
 		end
 		
 		function newArray = resizeArray(oldArray, newLength)
@@ -238,8 +81,10 @@ classdef TimeSeriesUtil
 		% Parameters:
 		% oldArray: row or column vector
 		% newLength: nonnegative, integer
-			util.TypesUtil.mustBeNotEmpty(oldArray);
-			validateattributes(newLength, {'numeric'}, {'integer', 'positive'});
+			import util.TypesUtil
+		
+			TypesUtil.mustBeNotEmpty(oldArray);
+			validateattributes(newLength, {'numeric'}, {'integer', 'nonnegative'});
 		
 			oldLength = length(oldArray);
 		
@@ -267,6 +112,8 @@ classdef TimeSeriesUtil
 		% -if we're undersampled: repeat the values
 		%
 		% TODO: write documentation for this method
+			import util.TimeSeriesUtil
+			import util.TypesUtil
 			
 			% validates arguments
 			validateattributes(oldSamples, {'numeric'}, {'vector'});
@@ -276,7 +123,7 @@ classdef TimeSeriesUtil
 				error('oldSamples and oldTimeArray must have the same length');
 			end
 			
-			% if input is empty, outout is empty as well
+			% if input is empty, output is empty as well
 			if isempty(newTime)
 				newSamples = newTime; % the same empty type as the input, to be concise with the user entry.
 				return
@@ -305,13 +152,13 @@ classdef TimeSeriesUtil
 			end
 			
 			if nargin >= 4
-				util.TypesUtil.mustBeTxt(processingMode);
+				TypesUtil.mustBeTxt(processingMode);
 			else
 				processingMode = 'forward1';
 			end
 			
 			if nargin >= 5
-				util.TypesUtil.mustBeTxt(outsideRangeHandling);
+				TypesUtil.mustBeTxt(outsideRangeHandling);
 			else
 				outsideRangeHandling = 'zeros';
 % 				outsideRangeHandling = 'nan';
@@ -333,16 +180,16 @@ classdef TimeSeriesUtil
 			% redirects to the correct function
 			switch processingMode
 				case {'forward', 'forward1'}
-					newSamples = util.TimeSeriesUtil.resampleForward1(newSamples, oldTime, oldSamples, newTime, useRow, outsideRangeHandling);
+					newSamples = TimeSeriesUtil.resampleForward1(newSamples, oldTime, oldSamples, newTime, useRow, outsideRangeHandling);
 				case 'forward2'
-					newSamples = util.TimeSeriesUtil.resampleForward2(newSamples, oldTime, oldSamples, newTime, useRow, outsideRangeHandling);
+					newSamples = TimeSeriesUtil.resampleForward2(newSamples, oldTime, oldSamples, newTime, useRow, outsideRangeHandling);
 				case 'backward'
-					newSamples = util.TimeSeriesUtil.resampleBackward1(newSamples, oldTime, oldSamples, newTime, useRow, outsideRangeHandling);
+					newSamples = TimeSeriesUtil.resampleBackward1(newSamples, oldTime, oldSamples, newTime, useRow, outsideRangeHandling);
 				otherwise
 					error('Input "%s" not recognized. Valid arguments are %s', processingMode, 'forward|forward1|forward2|backward');
 			end
 			
-% 			old techinique for error highlighting
+% 			old technique for error highlighting
 % 			for i = 1:length(newSamples)
 % 				if isnan(newSamples(i))
 % 					newSamples(i) = 1000;
@@ -352,6 +199,145 @@ classdef TimeSeriesUtil
 	end
 	
 	methods(Static, Access = private)
+		function [i0, t0] = getStartingPoint(oldT0, T, dt, options)
+		% Positions the starting point to an actual valid point
+		% Since we need the sample count to be integer, not all
+		% starting/ending points are viable.
+		%
+		% Also, since we support non-uniform sampling, things can get a
+		% little complicated
+			import util.TimeSeriesUtil
+			
+			% distance between starting points.
+			% e>0: new start time is LEFT of the original start time
+			% e<0: new start time is RIGHT of the original start time
+			e = oldT0 - options('start-time');
+			
+			% how many periods fit in it
+			n = round(e/T, 12);
+			% how many integer durations fit in it
+			N = fix(n);
+			
+			% nothing to do.
+			if e==0  || n==N
+				i0=1;
+				t0=options('start-time');
+				return;
+			end
+			
+			% displaces the time array in time
+			tTemp = [0; cumsum(dt)] + oldT0 - N*T;
+			
+			% correction needed for when new start time is LEFT of the original start time
+			if e > 0; tTemp = tTemp - T; end
+			
+			% what is index immediately BEFORE options('start-time')?
+			i0 = find(tTemp > options('start-time'), 1) - 1;
+			t0 = tTemp(i0);
+		end
+		
+		function [options, oldTime, oldSamples] = respanOptions(oldTime, oldSamples, input)
+		% Processes the varargin options of the respan method
+			import util.TypesUtil
+			
+			% this will be used to make sure the output is in the same
+			% format as the input (although the user can override this
+			% behavior)
+			useRow = isrow(oldTime);
+			
+			% converts everything to column-vectors
+			oldTime = oldTime(:);
+			oldSamples = oldSamples(:);
+			
+			% checks size
+			if length(oldTime) ~= length(oldSamples)
+				error('time and samples must have the same number of elements.');
+			end
+			
+			% other tests
+			validateattributes(oldTime, {'numeric'}, {'finite', 'increasing'});
+			validateattributes(oldSamples, {'numeric'}, {'finite'});
+			
+			% default options
+			options = {
+				'start-time', oldTime(1); % new signal will be synthesized from here
+				'end-time', oldTime(end); % new signal will synthesized until here
+				'gap', oldTime(end) - oldTime(end-1); % the duration of last sample
+				'use-row', useRow; % format of the output
+				'left-border', 'enlarge'; % enlarge|reduce|truncate
+				'right-border', 'enlarge'; % enlarge|reduce|truncate
+			};
+			% we use options as a key-value mapping
+			options = containers.Map(options(:, 1), options(:, 2));
+			
+			% if no manual input is informed, no further processing is
+			% needed and the method will use the default options
+			% please note that the default settings are not checked, so
+			% make sure they are correct
+			if nargin < 3; return; end
+			
+			for i = 1:size(input, 1)
+				% input general checking
+				key = lower(input{i, 1});
+				value = input{i, 2};
+				
+				% key checking
+				if ~isKey(options, key); error('%s is not a valid argument.', key); end
+				
+				% value checking
+				value = lower(value);
+				switch key
+					case {'start-time', 'end-time'}
+						TypesUtil.mustBeScalar(value);
+					case 'gap'
+						mustBePositive(value);
+					case 'use-row'
+						TypesUtil.mustBeLogical(value);
+					case {'left-border', 'right-border'}
+						mustBeMember(value, {'enlarge', 'reduce', 'fixed'});
+					otherwise
+						error('TimeSeriesUtil:implementationError', '%s argument not implemented.', key);
+				end
+				
+				% storing
+				options(key) = value;
+			end
+			
+			% final checking
+			validateattributes(options('start-time'), {'numeric'}, {'finite'});
+			validateattributes(options('end-time'), {'numeric'}, {'finite', '>', options('start-time')});
+		end
+		
+		function [newTime, newSamples] = truncateBorders(newTime, newSamples, options)
+		% Handles the truncation of the left and right borders.
+			switch options('left-border')
+				case 'enlarge'
+					% 'enlarge' is naturally done in the previous steps
+				case 'reduce'
+					if newTime(1) < options('start-time')
+						newTime(1) = [];
+						newSamples(1) = [];
+					end
+				case 'fixed'
+					if newTime(1) < options('start-time')
+						newTime(1) = options('start-time');
+					end
+			end
+			switch options('right-border')
+				case 'enlarge'
+					% 'enlarge' is naturally done in the previous steps
+				case 'reduce'
+					if newTime(end) > options('end-time')
+						newTime(end) = [];
+						newSamples(end) = [];
+					end
+				case 'fixed'
+					if newTime(end) > options('end-time')
+						newTime(end) = options('end-time');
+					end
+			end
+		end
+		
 		function newSamples = resampleForward1(newSamples, oldTime, oldSamples, newTime, useRow, outsideRangeHandling)
 			
 			% uses the second last interval as the last look-ahead period
