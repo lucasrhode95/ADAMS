@@ -36,7 +36,7 @@
     <param.web.mcr.name>ADAMS_web_installer</param.web.mcr.name>
     <param.package.mcr.name>ADAMS</param.package.mcr.name>
     <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
-    <param.windows.command.prompt>false</param.windows.command.prompt>
+    <param.windows.command.prompt>true</param.windows.command.prompt>
     <param.create.log>true</param.create.log>
     <param.log.file>ADAMS_logs.txt</param.log.file>
     <param.native.matlab>false</param.native.matlab>
@@ -67,6 +67,7 @@
       <param.package.mcr />
       <param.no.mcr />
       <param.no.mcr.name />
+      <param.windows.command.prompt />
       <param.native.matlab />
       <param.checkbox />
       <param.example />
