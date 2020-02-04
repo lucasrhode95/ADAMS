@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration build-checksum="3333212914" file="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer.prj" location="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en" name="ADAMS_installer" preferred-package-location="C:\ADAMS\Installer\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration build-checksum="509966826" file="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer.prj" location="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en" name="ADAMS_installer" preferred-package-location="C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>ADAMS</param.appname>
     <param.icon>${PROJECT_ROOT}\ADAMS_installer_resources\icon.ico</param.icon>
     <param.icons>
@@ -12,33 +12,33 @@
     <param.authnamewatermark>Lucas Rhode</param.authnamewatermark>
     <param.email>rhode.lucasb@gmail.com</param.email>
     <param.company>Universty of Western Parana (UNIOESTE)</param.company>
-    <param.summary>Optimization of microgrid networks.</param.summary>
+    <param.summary>Simulation of energy management processes in microgrids.</param.summary>
     <param.description>ADAMS is an Windows app built with MATLAB and GAMS that allows the user to create microgrid simulations of a day-ahead planning. It is a result of an undergrad thesis about microgrids presented to the State University of Western Parana (UNIOESTE) on Dec/2019.</param.description>
     <param.screenshot>${PROJECT_ROOT}\figures\splash_squared.png</param.screenshot>
     <param.guid />
     <param.installpath.string>\Universty of Western Parana (UNIOESTE)\ADAMS\</param.installpath.string>
-    <param.installpath.combo>option.installpath.appdata</param.installpath.combo>
-    <param.logo>${PROJECT_ROOT}\figures\icon.png</param.logo>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo>${PROJECT_ROOT}\figures\splash_portrait.png</param.logo>
     <param.install.notes>- GAMS x64 with IBM's CPLEX licence required (don't forget to add it to your enviroment variables)
-- Source code available on github.com/lucasrhode95/ADAMS</param.install.notes>
+- Source code and documentation available on github.com/lucasrhode95/ADAMS</param.install.notes>
     <param.target.install.notes />
-    <param.intermediate>C:\ADAMS\Installer\for_testing</param.intermediate>
-    <param.files.only>C:\ADAMS\Installer\for_redistribution_files_only</param.files.only>
-    <param.output>C:\ADAMS\Installer\for_redistribution</param.output>
-    <param.logdir>C:\ADAMS\Logs</param.logdir>
+    <param.intermediate>${PROJECT_ROOT}\ADAMS_installer\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\ADAMS_installer\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\ADAMS_installer\for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}\ADAMS_installer</param.logdir>
     <param.enable.clean.build>false</param.enable.clean.build>
     <param.user.defined.mcr.options />
     <param.target.type>subtarget.standalone</param.target.type>
     <param.support.packages />
-    <param.web.mcr>true</param.web.mcr>
-    <param.package.mcr>false</param.package.mcr>
+    <param.web.mcr>false</param.web.mcr>
+    <param.package.mcr>true</param.package.mcr>
     <param.no.mcr>false</param.no.mcr>
     <param.web.mcr.name>ADAMS_web_installer</param.web.mcr.name>
     <param.package.mcr.name>ADAMS</param.package.mcr.name>
     <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
     <param.windows.command.prompt>false</param.windows.command.prompt>
     <param.create.log>true</param.create.log>
-    <param.log.file>ADAMS_logs</param.log.file>
+    <param.log.file>ADAMS_logs.txt</param.log.file>
     <param.native.matlab>false</param.native.matlab>
     <param.checkbox>false</param.checkbox>
     <param.example />
@@ -53,13 +53,16 @@
       <param.email />
       <param.guid />
       <param.installpath.string />
+      <param.installpath.combo />
       <param.target.install.notes />
+      <param.intermediate />
+      <param.files.only />
+      <param.output />
+      <param.logdir />
       <param.enable.clean.build />
       <param.user.defined.mcr.options />
       <param.target.type />
       <param.support.packages />
-      <param.web.mcr />
-      <param.package.mcr />
       <param.no.mcr />
       <param.no.mcr.name />
       <param.native.matlab />
@@ -71,21 +74,21 @@
     </fileset.main>
     <fileset.resources>
       <file>C:\GAMS\win64\25.0\gdxdclib64.dll</file>
-      <file>C:\GAMS\win64\25.0\rgdx.m</file>
       <file>C:\GAMS\win64\25.0\rgdx.mexw64</file>
-      <file>C:\GAMS\win64\25.0\wgdx.m</file>
       <file>C:\GAMS\win64\25.0\wgdx.mexw64</file>
-      <file>C:\Users\Lucas Rhode\Google Drive\Faculdade\5 ano\TCC (Adriano Batista)\Desenvolvimento\Matlab\pgeec_lib</file>
       <file>${PROJECT_ROOT}\figures</file>
+      <file>${PROJECT_ROOT}\TSChart.mlapp</file>
+      <file>C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\pgeec_lib</file>
     </fileset.resources>
     <fileset.package />
     <fileset.depfun>
-      <file>${PROJECT_ROOT}\TSChart.mlapp</file>
+      <file>C:\GAMS\win64\25.0\rgdx.m</file>
+      <file>C:\GAMS\win64\25.0\wgdx.m</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="C:\ADAMS\Installer\for_testing" name="splash.png" optional="false">C:\ADAMS\Installer\for_testing\splash.png</file>
-      <file location="C:\ADAMS\Installer\for_testing" name="readme.txt" optional="true">C:\ADAMS\Installer\for_testing\readme.txt</file>
-      <file location="C:\ADAMS\Installer\for_testing" name="ADAMS.exe" optional="false">C:\ADAMS\Installer\for_testing\ADAMS.exe</file>
+      <file location="${PROJECT_ROOT}\ADAMS_installer\for_testing" name="ADAMS.exe" optional="false">C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer\for_testing\ADAMS.exe</file>
+      <file location="${PROJECT_ROOT}\ADAMS_installer\for_testing" name="readme.txt" optional="true">C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer\for_testing\readme.txt</file>
+      <file location="${PROJECT_ROOT}\ADAMS_installer\for_testing" name="splash.png" optional="false">C:\Users\Lucas Rhode\Google Drive\Projetos\ADAMS\ADAMS_en\ADAMS_installer\for_testing\splash.png</file>
     </build-deliverables>
     <workflow />
     <matlab>
