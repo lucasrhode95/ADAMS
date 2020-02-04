@@ -1,10 +1,9 @@
 ![ADAMS splash screen](ADAMS_en/figures/github-cover.png)
+ADAMS is a Windows app built with MATLAB and GAMS that allows the user to create microgrid simulations of a day-ahead planning. It is a result of an undergrad thesis about microgrids presented to the State University of Western Paraná (UNIOESTE) on Dec/2019.
 
 <p align="center">
   <b><a href='https://github.com/lucasrhode95/ADAMS/releases/latest'>GET THE LATEST RELEASE</a></b>
 </p>
-
-ADAMS is a Windows app built with MATLAB and GAMS that allows the user to create microgrid simulations of a day-ahead planning. It is a result of an undergrad thesis about microgrids presented to the State University of Western Paraná (UNIOESTE) on Dec/2019.
 
 # Context
 The application consists of a graphical interface meant to configure and run simulations of the optimization strategy called “day-ahead planning” for microgrids (MGs). In this technique, the main controller of a MG schedules the set-points of all the devices on the MG for, typically, 24-hour horizons. Executing the day-ahead algorithm means choosing the right combo of generators (and/or batteries) that will deliver the energy needed at the lowest possible cost.
