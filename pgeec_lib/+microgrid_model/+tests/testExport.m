@@ -10,9 +10,9 @@ debugMode = true;
 keepFiles = false;
 warningsOn = true;
 
-batteryActive = true;
-dieselGenActive = true;
-loadActive = true;
+batteryActive = false;
+dieselGenActive = false;
+loadActive = false;
 solarPanelActive = false;
 islandMode = false;
 
@@ -48,11 +48,12 @@ dieselGen.linearizationPoints = 12;
 
 mgcc.addMGElement(dieselGen);
 %% solar panel
-% pv = SolarPanelConstant();
-% pv.importGenerationProfile('pv1.xlsx');
-% pv.setActive(solarPanelActive);
-% 
-% mgcc.addMGElement(pv);
+filepath = fullfile(FilesUtil.getParentDir, 'pv1.xlsx');
+pv = SolarPanelConstant();
+pv.importGenerationProfile(filepath);
+pv.setActive(solarPanelActive);
+
+mgcc.addMGElement(pv);
 %% load
 filepath = fullfile(FilesUtil.getParentDir, 'load2.xlsx');
 load = LoadSheddable();
@@ -61,11 +62,6 @@ load.setActive(loadActive);
 
 mgcc.addMGElement(load);
 
-%% run
-mgcc.run();
-
-%% result printing
-t = mgcc.getTime();
-
-stairs(t, battery.getStateOfCharge());
-stairs(t, load.getDemandProfile());
+%% export
+filepath = util.FilesUtil.uiGetDir();
+mgcc.export(filepath);
