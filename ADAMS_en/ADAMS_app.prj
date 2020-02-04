@@ -12,7 +12,7 @@
     </param.icons>
     <param.summary />
     <param.description />
-    <param.screenshot>C:\Users\Lucas Rhode\AppData\Local\Temp\tp59dafeb9_b10a_45f4_a7cb_18f339314de4.png</param.screenshot>
+    <param.screenshot />
     <param.version>1.0</param.version>
     <param.products.name />
     <param.products.id />
@@ -20,11 +20,12 @@
     <param.platforms>
       <item>win64</item>
     </param.platforms>
-    <param.output>C:\ADAMS\App</param.output>
+    <param.output>C:\</param.output>
     <param.guid>91598857-4e93-4cee-acec-48f3c9383135</param.guid>
     <unset>
       <param.summary />
       <param.description />
+      <param.screenshot />
       <param.version />
       <param.products.name />
       <param.products.id />
@@ -47,9 +48,7 @@
       <file>${PROJECT_ROOT}\figures</file>
     </fileset.resources>
     <fileset.package />
-    <build-deliverables>
-      <file location="C:\ADAMS" name="App" optional="false">C:\ADAMS\App</file>
-    </build-deliverables>
+    <build-deliverables />
     <workflow />
     <matlab>
       <root>C:\Program Files\Polyspace\R2019a</root>
