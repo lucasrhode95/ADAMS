@@ -1,5 +1,9 @@
 ![ADAMS splash screen](ADAMS_en/figures/github-cover.png)
 
+<p align="center">
+  <b><a href='https://github.com/lucasrhode95/ADAMS/releases/latest'>GET THE LATEST RELEASE</a></b>
+</p>
+
 ADAMS is a Windows app built with MATLAB and GAMS that allows the user to create microgrid simulations of a day-ahead planning. It is a result of an undergrad thesis about microgrids presented to the State University of Western Paraná (UNIOESTE) on Dec/2019.
 
 # Context
@@ -16,7 +20,7 @@ The workflow is as follows:
 
 # Installation
 1. ADAMS expects your machine to have GAMS installed, licensed and in your enviroment path. You can get it [here](GAMS/gams_license.md) or use any version that you already have installed. Check [this](GAMS/README.md) for more information about how to configure GAMS environment.
-1. Install using the web installer or the standalone installer: https://drive.google.com/open?id=1OuZuJSZSq1NdYQyCdt4_hXaLGAgDSdeK
+1. Get the lastest release from [here](https://github.com/lucasrhode95/ADAMS/releases/latest)
 1. Done! You can get access to the user manual [here](USER_MANUAL.pdf) or through the app's Help menu.
 
 # Screenshots
