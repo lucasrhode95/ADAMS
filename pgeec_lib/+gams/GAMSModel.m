@@ -134,8 +134,9 @@ classdef GAMSModel < handle
 			
 			% tests if GAMS is correctly installed
 			[status, msg] = GAMSModel.checkGams();
-			if status ~= GAMSModel.STATUS_OK
-				error('GAMSModel:environmentError', msg);
+			if status ~= GAMSModel.STATUS_OK && this.WARNINGS
+				CommonsUtil.log('GAMS enviroment validation failed. Proceed with caution.');
+				warning('GAMSModel:environmentError', msg);
 			end
 			
 			if this.DEV
@@ -1024,33 +1025,52 @@ classdef GAMSModel < handle
 			end
 		end
 		
-		function totalTime = exportModelData(this, dir, filename)
-		% Creates everything need to run the model externally
+		function totalTime = exportModelData(this, dir, newGdxDumpPath, newModelPath)
+		% Creates the files with all the variables that were added to the model.
+		% 
+		% This way, is possible to run the model externally with no help
+		% from this class. Very helpful for debugging
+		%
+		% Examples:
+		% model.exportModelData(); exports the loader.gms file and the
+		% temporary output file (_timestamp_.gdx) after prompting the user
+		% with a path selection window.
+		%
+		% model.exportModelData(dir); same as before, but places the
+		% files in dir
 			import util.FilesUtil
+			import util.LastDirHelper
 			import util.CommonsUtil
+			import util.TypesUtil
 			
-			% if no filename is informed, asks for one
-			if nargin < 2
-				dir = '';
-			end
+			totalTime = tic();
+			TypesUtil.mustBeTxt(dir);
+			CommonsUtil.log('Exporting model data to "%s"...\n', dir);
 			
+			% the var loader path cannot be changed because it's hard coded
+			% in the GAMS model file
 			if nargin < 3
-				[filename, dir] = FilesUtil.uiPutFile();
-				if ~filename
-					return
-				end
+				newGdxDumpPath = 'data.gdx';
 			end
+			if nargin < 4
+				newModelPath = 'main.gms';
+			end
+			newVarLoaderPath = FilesUtil.getFileName(this.getVarLoaderPath());
+			
+			newGdxDumpPath = fullfile(dir, newGdxDumpPath);
+			newVarLoaderPath = fullfile(dir, newVarLoaderPath);
+			newModelPath = fullfile(dir, newModelPath);
 			
 			% Exports the GDX data file
-			this.flushVariables(fullfile(dir, newTmpOutName));
+			this.flushVariables(newGdxDumpPath);
 			
 			% Export the var loader file
-			this.writeVarLoaderFile(fullfile(dir, newLoaderName));
+			this.writeVarLoaderFile(newVarLoaderPath, newGdxDumpPath);
 			
 			% Export the main GMS file
-			copyfile(this.getModelPath(), fullfile(dir, newModelName));
+			copyfile(this.getModelPath(), newModelPath);
 			
-			
+			totalTime = toc(totalTime);
 		end
 		% ^^ PUBLIC UTILITIES
 		
@@ -1333,7 +1353,6 @@ classdef GAMSModel < handle
 			
 			if ~strcmp(this.getModelPath(), modelPath)
 				this.setIsReadyForExport(false);
-% 				this.modelPath = strrep(FilesUtil.getFullPath(modelPath, true), '\', '/');
 				this.modelPath = FilesUtil.sanitizePath(modelPath, true);
 			end
 		end
@@ -1594,7 +1613,7 @@ classdef GAMSModel < handle
 		end
 				
 		% TODO: consider using $loadDC
-		function timeElapsed = writeVarLoaderFile(this, varLoaderPath)
+		function timeElapsed = writeVarLoaderFile(this, varLoaderPath, gdxDumpPath)
 		%WRITEVARLOADERFILE Programatically creates the variable-loading GAMS file.
 		%
 		% When loading dynamic variables, the user needs to include a file
@@ -1603,7 +1622,8 @@ classdef GAMSModel < handle
 		% that were flushed to the temporary file into GAMS workspace.
 		% The only line the user needs to add to their model is:
 		% $if exist loader.gms $include loader.gms
-			import util.*
+			import util.FilesUtil
+			import util.CommonsUtil
 		
 			timeElapsed = tic();
 			
@@ -1611,15 +1631,17 @@ classdef GAMSModel < handle
 				error('Model is not ready for execution. Please finish setting it up.');
 			end
 			if (this.DEV)
-% 				CommonsUtil.log('Creating GMS loader file: "%s"... ', FilesUtil.shortenPath(this.getVarLoaderPath()));
-				CommonsUtil.log('Creating GMS loader file... ');
+				CommonsUtil.log('Creating GMS loader file: "%s"... ', FilesUtil.shortenPath(this.getVarLoaderPath()));
 			end
 			if nargin < 2
 				varLoaderPath = this.getVarLoaderPath();
 			end
+			if nargin < 3
+				gdxDumpPath = this.getGdxDumpPath();
+			end
 			
 			%initialization
-			varLoaderPath = util.FilesUtil.removeExtension(varLoaderPath);
+			varLoaderPath = FilesUtil.removeExtension(varLoaderPath);
 			varLoaderPath = [varLoaderPath '.gms'];
 			
 			fid = fopen(varLoaderPath, 'w');
@@ -1629,7 +1651,7 @@ classdef GAMSModel < handle
 			end
 			
 			%header
-			header = sprintf('$gdxin "%s"\n', this.getGdxDumpPath());
+			header = sprintf('$gdxin "%s"\n', gdxDumpPath);
 			fprintf(fid, "%s", header);
 			
 			%content
@@ -1690,25 +1712,29 @@ classdef GAMSModel < handle
 		
 		function [code, message] = checkGams()
 			import gams.GAMSModel
+			import util.CommonsUtil
+			
 			code = GAMSModel.STATUS_OK;
 			message = 'GAMS is ready for simulation.';
 			
 			if exist('wgdx', 'file') ~= 3
 				code = GAMSModel.ERR_WGDX;
-				message = 'wgdx MEX-file not found.';
+				message = 'wgdx MEX-file not found. Add GAMS to MATLAB''s path.';
 				return;
 			end
 			
 			if exist('rgdx', 'file') ~= 3
 				code = GAMSModel.ERR_RGDX;
-				message = 'rgdx MEX-file not found.';
+				message = 'rgdx MEX-file not found. Add GAMS to MATLAB''s path.';
 				return;
 			end
 			
 			[status, cmdout] = system('gams');
 			if status ~= 0
 				code = GAMSModel.ERR_CMD;
-				message = cmdout;
+				message = 'gams communication failed. Check Windows PATH';
+				CommonsUtil.log('Failure to issue command "gams".\n');
+				CommonsUtil.log('Message: [%s]\n', cmdout);
 				return;
 			end
 		end

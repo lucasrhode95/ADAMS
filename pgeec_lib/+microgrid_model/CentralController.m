@@ -402,20 +402,62 @@ classdef CentralController < microgrid_model.MGElement
 		% - make the results available to every <a href="matlab:doc('microgrid_model.MGElement')">MGElement</a>
 		%
 		% See also: microgrid_model
+			totalTime = this.runOrExport();
+		end
+		
+		function totalTime = export(this, exportDir)
+		% Runs the optimization process.
+		%
+		% After all the elements of the Microgrid have been configured,
+		% this method should be called to execute the model. It will:
+		% - initialize the GAMS interface
+		% - dynamically create the optimization variables and equations of every MG element
+		% - simulate
+		% - make the results available to every <a href="matlab:doc('microgrid_model.MGElement')">MGElement</a>
+		%
+		% See also: microgrid_model
+			totalTime = this.runOrExport(exportDir);
+		end
+		
+		function totalTime = runOrExport(this, exportDir)
+		% Runs the optimization process or exports the mathematical model
+		%
+		% After all the elements of the Microgrid have been configured,
+		% this method should be called to execute the model. It will:
+		% - initialize the GAMS interface
+		% - dynamically create the optimization variables and equations of every MG element
+		% - simulate
+		% - make the results available to every <a href="matlab:doc('microgrid_model.MGElement')">MGElement</a>
+		%
+		% See also: microgrid_model
+			import util.CommonsUtil
+			import util.TypesUtil
+			import util.FilesUtil
+		
+			controllerTime = tic();
 			totalTime = 0;
-			this.setHasBeenRun(false);
+			solve = true; % whether or not to actually run, i.e. solve the model
+			
+			% input checking
+			if nargin >= 2
+				solve = false; % if a directory is informed, it signals to export
+				TypesUtil.mustBeTxt(exportDir);
+				FilesUtil.checkIfExists(exportDir);
+			end
+			
+			if solve
+				this.setHasBeenRun(false);
+				if this.DEV; CommonsUtil.log('Run process started.\n'); end
+			else
+				CommonsUtil.log('Export process started.\n');
+			end
+			
+			% begins the execution
 			try
-				controllerTime = tic();
-
-				import util.CommonsUtil
-				if this.DEV
-					CommonsUtil.log('Run process started.\n');
-				end
-
 				% dynamically creates the .gms file that GAMSModel will read.
-				totalTime = totalTime + this.exportModelString(this.getGamsTmpFile());
+				totalTime = totalTime + this.flushGamsModel(this.getGamsTmpFile());
 
-				% once the model file is created and saved to disk, the GAMS
+				% once the model file is created and saved to disk, GAMS
 				% interface can be initialized
 				this.initializeGamsObject();
 
@@ -455,9 +497,13 @@ classdef CentralController < microgrid_model.MGElement
 				% checks if everyone is ready for execution
 				this.checkIsReadyForExecution();
 
-				% executes
-				totalTime = totalTime + this.getGamsObject().run();
-
+				% SWITCHES BETWEEN EXECUTION AND EXPORTING
+				if solve
+					totalTime = totalTime + this.getGamsObject().run();
+					this.setHasBeenRun(true);
+				else
+					totalTime = totalTime + this.getGamsObject().exportModelData(exportDir);
+				end
 
 				% removes temporary files
 				if ~this.KEEP_FILES
@@ -468,17 +514,11 @@ classdef CentralController < microgrid_model.MGElement
 				totalTime = totalTime + toc(controllerTime);
 
 				if this.DEV
-					CommonsUtil.log('\n');
-					CommonsUtil.log('Simulation finished in %0.3f s.\n', totalTime);
-					CommonsUtil.log('\n');
+					CommonsUtil.log('Execution finished in %0.3f s.\n', totalTime);
 				end
-				
-				this.setHasBeenRun(true);
 			catch e
 				if this.DEV
-					CommonsUtil.log('\n');
-					CommonsUtil.log('Simulation failed after %0.3f s.\n', totalTime);
-					CommonsUtil.log('\n');
+					CommonsUtil.log('Execution failed after %0.3f s.\n', totalTime);
 				end
 				rethrow(e);
 			end
@@ -534,37 +574,11 @@ classdef CentralController < microgrid_model.MGElement
 			end
 		end
 		
-		function elapsedTime = exportModelString(this, filePath, fullExport)
-		% Exports the generated str model to a .txt file and returns the execution time.	
+		function elapsedTime = flushGamsModel(this, filepath)
+		% Exports the generated str model to a .gms file and returns the execution time.	
 			import util.CommonsUtil
 			import util.FilesUtil
-			
-			% If no path is informed, display a popup for the user to
-			% select the path to save the file
-			if nargin < 2
-				if this.DEV
-					CommonsUtil.log('Waiting for user input... ');
-				end
-				
-				filePath = FilesUtil.uiPutFile('microgrid.gms');
-				
-				if isempty(filePath)
-					if this.DEV
-						CommonsUtil.log('Canceled\n');
-					end
-					return;
-				end
-% 			else
-				% makes sure the path is absolute
-% 				filePath = FilesUtil.getFullPath(filePath, false);
-			end
-			
-			% If fullExport is set to false, exports only the main file.
-			if nargin < 3
-				fullExport = true;
-			end
-			
-			%TODO: finish implemeting the full export option
+			import util.TypesUtil
 			
 			% starts the clock
 			elapsedTime = tic();
@@ -574,36 +588,22 @@ classdef CentralController < microgrid_model.MGElement
 				CommonsUtil.log('Exporting model file...\n');
 			end
 			
+			% makes sure the file is .gms
+			filepath = [FilesUtil.removeExtension(filepath) '.gms'];
+			
 			try				
-				% tries to open the informed file
-				fid = fopen(filePath, 'w');
-				if fid == -1
-					error('Unable to create/overwrite file <%s>', filePath);
-				end
-				
-				% retrieves the model file
-				content = this.buildGamsCode();
-				% writes to a file and closes it
-				fprintf(fid, '%s', content);
-				fclose(fid);
+				% generates the model file
+				FilesUtil.writeTextFile(filepath, this.buildGamsCode());
 				
 				% stops the clock and more logging...
 				elapsedTime = toc(elapsedTime);
 				if this.DEV
 					CommonsUtil.log('Model file saved on disk! %5.0f ms', elapsedTime*1000);
-					CommonsUtil.log(' <<a href="matlab:open(''%s'')">%s</a>>\n', filePath, filePath);
+					CommonsUtil.log(' <<a href="matlab:open(''%s'')">%s</a>>\n', filepath, filepath);
 				end
-			catch e % pretty standard error handling
-				try
-					fclose(fid);
-				catch
-				end
-				
+			catch e
 				elapsedTime = toc(elapsedTime);
-				if this.DEV
-					CommonsUtil.log('Fail. %5.0f ms\n', elapsedTime*1000);
-				end
-				
+				if this.DEV; CommonsUtil.log('Fail. %5.0f ms\n', elapsedTime*1000); end
 				rethrow(e);
 			end
 		end
@@ -1021,8 +1021,10 @@ classdef CentralController < microgrid_model.MGElement
 		
 		function loadStatement = buildLoadStatement(this)
 		% Builds the load.gms statement
-% 			loadStatement = sprintf('$include "%s"', util.FilesUtil.getFullPath(this.getVarLoaderFile(), false));
-			loadStatement = sprintf('$include "%s"', this.getVarLoaderFile());
+			loadStatement = sprintf('%s\n%s\n$include "%s"', ...
+				'* This file needs to be in GAMS'' process directory',...
+				'* This can be done by creating a new project in the current folder', ...
+				this.getVarLoaderFile());
 		end
 		
 		function initializeGamsObject(this)
@@ -1053,7 +1055,8 @@ classdef CentralController < microgrid_model.MGElement
 			% statement that will load dynamic data
 			loadSeparatorTop = '*----------------------------VV LOAD VARIABLES VV-------------------------------';
 			loadSeparatorBot = '*----------------------------^^ LOAD VARIABLES ^^-------------------------------';
-			gamsCode = sprintf('%s\n\n%s\n\n%s\n\n%s', gamsCode, loadSeparatorTop, this.buildLoadStatement(), loadSeparatorBot);
+			gamsCode = sprintf('%s\n\n%s\n\n%s\n\n%s', gamsCode, ...
+				loadSeparatorTop, this.buildLoadStatement(), loadSeparatorBot);
 			
 			% equations of each MGElement
 			for i = 1:length(mgElements)
@@ -1065,6 +1068,8 @@ classdef CentralController < microgrid_model.MGElement
 			% final part: microgrid and MGCC
 			gamsCode = sprintf('%s\n\n%s', gamsCode, this.getMicrogrid().getEquationsModel());
 			gamsCode = sprintf('%s\n\n%s', gamsCode, this.getEquationsModel());
+			
+			gamsCode = strtrim(gamsCode);
 		end
 		
 	end
