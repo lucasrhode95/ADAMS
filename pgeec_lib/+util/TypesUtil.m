@@ -88,6 +88,17 @@ classdef TypesUtil
 			end
 		end
 		
+		function mustBe1D(a, allowEmpty)
+		% Checks if a variable is one-dimensional
+			if nargin >= 2 && allowEmpty && isempty(a)
+				return;
+			end
+			
+			if ~isrow(a) && ~iscolumn(a)
+				error('Variable "%s" must be one-dimensional.', inputname(1));
+			end
+		end
+		
 		function mustBeBetween(a, min, max)
 		% Checks if a variable is whithin two values, throws an error if not.
 			util.TypesUtil.mustBeScalar(a);
